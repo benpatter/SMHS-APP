@@ -14,58 +14,12 @@ still applies.
 
 ---
 
-## 0. Repository access: a read-only deploy key
+## 0. The repository
 
-The repo is <https://github.com/CrossGen-AI-Public/SMHS-app>. It is **not
-public**, so a plain `git clone` fails. Access is granted with a **deploy key**:
-one SSH key that can read this one repository and nothing else. No GitHub
-account is needed on the server, and the key cannot write to the repo or reach
-anything else in the organization.
+<https://github.com/benpatter/SMHS-APP>
 
-The private half of the key never leaves the app server. Generate it there:
-
-```sh
-apk add git openssh
-
-# Unprivileged system user that owns the app and runs the service.
-# The group is created separately on purpose: busybox `adduser -S` does not
-# create a matching group, and every chown below (plus the OpenRC service,
-# which runs as smapp:smapp) needs it to exist.
-addgroup -S smapp
-adduser -S -D -H -h /opt/smapp -s /sbin/nologin -G smapp smapp
-mkdir -p /opt/smapp/.ssh
-chown -R smapp:smapp /opt/smapp
-chmod 700 /opt/smapp/.ssh
-
-su -s /bin/sh smapp -c 'ssh-keygen -t ed25519 -N "" -C "smapp deploy key" -f /opt/smapp/.ssh/id_ed25519'
-
-# Send THIS (the .pub file, one line) back to us. Never send id_ed25519.
-cat /opt/smapp/.ssh/id_ed25519.pub
-```
-
-We add that public key to the repository under **Settings → Deploy keys → Add
-deploy key**, with "Allow write access" left unchecked, and confirm when it is
-live. Then check the key works:
-
-```sh
-su -s /bin/sh smapp -c 'ssh -o StrictHostKeyChecking=accept-new -T git@github.com'
-```
-
-`Hi CrossGen-AI-Public/SMHS-app! You've successfully authenticated, but GitHub
-does not provide shell access.` is the success message. That command also pins
-GitHub's host key into `/opt/smapp/.ssh/known_hosts`, which the clone in §2
-needs.
-
-If outbound SSH on port 22 is blocked, use GitHub's SSH-over-443 endpoint
-instead of opening the firewall — put this in `/opt/smapp/.ssh/config`
-(`chown smapp:smapp`, `chmod 600`) and everything below works unchanged:
-
-```
-Host github.com
-    HostName ssh.github.com
-    Port 443
-    User git
-```
+It is public, so cloning needs no key, no account, and no token. Plain outbound
+HTTPS to github.com is the only requirement.
 
 ---
 
@@ -76,7 +30,12 @@ version — verified: a clean `npm ci` + `next build` + full boot on
 Alpine 3.24 with Node 26 and musl, including `node:sqlite`, which the server
 uses for staff accounts and push subscriptions.
 
-The only extra packages are `git` and `openssh`, both already installed in §0.
+One extra package is needed:
+
+```sh
+apk add git
+```
+
 Git is not optional in a git-based deployment: `start-prod.sh` uses it to detect
 when a `git pull` changed the code and a rebuild is needed. Without git the
 script says so out loud and you must pass `--build` by hand after every update.
@@ -86,20 +45,28 @@ No swap is needed. The production build peaks well under this box's 4 GB
 
 ---
 
-## 2. Clone the code into /opt/smapp
-
-`/opt/smapp` already exists and holds the deploy key from §0, so clone **into**
-it rather than over it:
+## 2. Create the service user and clone
 
 ```sh
-su -s /bin/sh smapp -c 'git clone git@github.com:CrossGen-AI-Public/SMHS-app.git /tmp/smapp-clone'
-su -s /bin/sh smapp -c 'cp -a /tmp/smapp-clone/. /opt/smapp/ && rm -rf /tmp/smapp-clone'
+# Unprivileged system user that owns the app and runs the service.
+# The group is created separately on purpose: busybox `adduser -S` does not
+# create a matching group, and the chown below (plus the OpenRC service, which
+# runs as smapp:smapp) needs it to exist.
+addgroup -S smapp
+adduser -S -D -H -h /opt/smapp -s /sbin/nologin -G smapp smapp
+
+git clone https://github.com/benpatter/SMHS-APP.git /opt/smapp
 chown -R smapp:smapp /opt/smapp
 ```
 
-Run every git command in this document as the `smapp` user, as above. Git
-refuses to operate on a tree owned by someone else ("dubious ownership"), so
-`git pull` as root will fail here.
+Run later git commands as the `smapp` user:
+
+```sh
+su -s /bin/sh smapp -c 'git -C /opt/smapp pull'
+```
+
+Git refuses to operate on a tree owned by someone else ("dubious ownership"), so
+`git pull` as root will fail once the tree belongs to `smapp`.
 
 Confirm the clone landed:
 
