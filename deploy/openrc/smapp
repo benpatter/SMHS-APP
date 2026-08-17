@@ -1,0 +1,45 @@
+#!/sbin/openrc-run
+# OpenRC service for the SMCHS app on Alpine Linux.
+#
+#   install -m 755 deploy/openrc/smapp /etc/init.d/smapp
+#   rc-update add smapp default
+#   rc-service smapp start
+#
+# Alpine has no systemd, so the unit in DEPLOY.md does not apply there. This is
+# the equivalent: runs start-prod.sh as an unprivileged user, restarts on crash,
+# starts at boot.
+
+name="smapp"
+description="SMCHS app (app + API on \$PORT, see /opt/smapp/.env)"
+
+directory="/opt/smapp"
+command="/opt/smapp/start-prod.sh"
+command_user="smapp:smapp"
+
+# supervise-daemon is OpenRC's equivalent of systemd Restart=always.
+supervisor="supervise-daemon"
+respawn_delay=5
+respawn_max=0          # never give up restarting
+pidfile="/run/smapp.pid"
+
+output_log="/var/log/smapp.log"
+error_log="/var/log/smapp.log"
+
+# npm and next need a writable HOME; without this they fall back to / and fail
+# on a nologin system user. Everything they cache lands under /opt/smapp
+# (.npm/, .config/), which .gitignore already excludes.
+export HOME="/opt/smapp"
+
+depend() {
+	need net
+	after firewall
+}
+
+start_pre() {
+	if [ ! -f /opt/smapp/.env ]; then
+		eerror "/opt/smapp/.env is missing — copy .env.example and fill it in first"
+		return 1
+	fi
+	checkpath --directory --owner smapp:smapp --mode 0755 /opt/smapp/server/.data
+	checkpath --file --owner smapp:smapp --mode 0644 /var/log/smapp.log
+}

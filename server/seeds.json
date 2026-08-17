@@ -1,0 +1,1610 @@
+{
+  "prayers": [
+    {
+      "id": "lenten-prayer",
+      "title": "Lenten Prayer",
+      "text": "Almighty and Everlasting God,\nYou have given the human race\nJesus Christ our Savior as a model of humility.\nHe fulfilled Your will by becoming man\nand giving His life on the cross.\nHelp us to bear witness to You\nby following His example of suffering,\nand make us worthy to share in His Resurrection.\nWe ask this through our Lord Jesus Christ, Your Son.\n\nAmen."
+    },
+    {
+      "id": "caritas-christi-prayer",
+      "title": "Caritas Christi Prayer",
+      "text": "Loving God,\nYou know us and care for us always,\nand your eternal love flows through us.\nThrough the Sacred Heart of Jesus,\nwe experience that love for humanity.\n\nGive us a share in His compassion,\nto see your image in all people.\nGive us a share in His humility,\nto serve and not be served.\nGive us a share in His justice,\nto seek righteousness and to show mercy.\nGive us a share in His goodness,\nto reveal your heart to others.\n\nAnd remind us each day that where Caritas Christi prevails,\nwe will always find you by surrendering our heart to yours.\n\nWe ask this through Christ our Lord,\nAmen.\n\nSt. Margaret Mary, pray for us."
+    },
+    {
+      "id": "our-father",
+      "title": "Our Father",
+      "text": "Our Father, who art in heaven,\nhallowed be thy name;\nthy kingdom come,\nthy will be done\non earth as it is in heaven.\nGive us this day our daily bread,\nand forgive us our trespasses,\nas we forgive those who trespass against us;\nand lead us not into temptation,\nbut deliver us from evil.\n\nAmen."
+    },
+    {
+      "id": "hail-mary",
+      "title": "Hail Mary",
+      "text": "Hail Mary, full of grace,\nthe Lord is with thee.\nBlessed art thou among women,\nand blessed is the fruit of thy womb, Jesus.\n\nHoly Mary, Mother of God,\npray for us sinners,\nnow and at the hour of our death.\n\nAmen."
+    },
+    {
+      "id": "glory-be",
+      "title": "Glory Be",
+      "text": "Glory be to the Father,\nand to the Son,\nand to the Holy Spirit.\n\nAs it was in the beginning,\nis now, and ever shall be,\nworld without end.\n\nAmen."
+    },
+    {
+      "id": "the-apostles-creed",
+      "title": "The Apostles' Creed",
+      "text": "I believe in God,\nthe Father almighty,\nCreator of heaven and earth,\nand in Jesus Christ, his only Son, our Lord,\nwho was conceived by the Holy Spirit,\nborn of the Virgin Mary,\nsuffered under Pontius Pilate,\nwas crucified, died and was buried;\nhe descended into hell;\non the third day he rose again from the dead;\nhe ascended into heaven,\nand is seated at the right hand of God the Father almighty;\nfrom there he will come to judge the living and the dead.\n\nI believe in the Holy Spirit,\nthe holy catholic Church,\nthe communion of saints,\nthe forgiveness of sins,\nthe resurrection of the body,\nand life everlasting.\n\nAmen."
+    },
+    {
+      "id": "prayer-of-a-student",
+      "title": "Prayer of A Student",
+      "text": "Come, Holy Spirit, Divine Creator,\ntrue source of light and fountain of wisdom!\nPour forth your brilliance upon my dense intellect,\ndissipate the darkness which covers me,\nthat of sin and of ignorance.\n\nGrant me a penetrating mind to understand,\na retentive memory,\nmethod and ease in learning,\nthe lucidity to comprehend,\nand abundant grace in expressing myself.\n\nGuide the beginning of my work,\ndirect its progress,\nand bring it to successful completion.\n\nThis I ask through Jesus Christ,\ntrue God and true man,\nliving and reigning with You and the Father,\nforever and ever.\n\nAmen."
+    },
+    {
+      "id": "act-of-contrition",
+      "title": "Act of Contrition",
+      "text": "O my God,\nI am heartily sorry for having offended Thee,\nand I detest all my sins\nbecause of Thy just punishments,\nbut most of all because they offend Thee, my God,\nwho art all-good and deserving of all my love.\n\nI firmly resolve, with the help of Thy grace,\nto sin no more\nand to avoid the near occasions of sin.\n\nAmen."
+    },
+    {
+      "id": "st-margaret-mary-of-alacoque",
+      "title": "St. Margaret Mary of Alacoque",
+      "text": "O St. Margaret Mary,\nyou were permitted by the Sacred Heart of Jesus\nto become the partaker of the divine treasures of His Heart.\nObtain for us, we beseech you,\nfrom this adorable Heart,\nthe graces we need so sorely.\n\nWe ask for these graces with unbounded confidence\nin the divine promises,\nso that the Sacred Heart may be glorified\nthrough your intercession.\n\nAmen.\n\nSt. Margaret Mary, pray for us."
+    },
+    {
+      "id": "hail-holy-queen",
+      "title": "Hail Holy Queen",
+      "text": "Hail, holy Queen, Mother of mercy,\nour life, our sweetness and our hope.\nTo thee do we cry, poor banished children of Eve.\nTo thee do we send up our sighs,\nmourning and weeping in this valley of tears.\n\nTurn then, most gracious advocate,\nthine eyes of mercy toward us,\nand after this our exile\nshow unto us the blessed fruit of thy womb, Jesus.\n\nO clement, O loving, O sweet Virgin Mary.\n\nPray for us, O holy Mother of God,\nthat we may be made worthy of the promises of Christ.\n\nAmen."
+    }
+  ],
+  "contactGroups": [
+    {
+      "id": "school-office",
+      "title": "School Office",
+      "entries": [
+        {
+          "topic": "Not sure who to ask",
+          "note": "The Parent Liaison helps with anything that comes up during the year.",
+          "contacts": [
+            {
+              "name": "Lori Evers",
+              "role": "Parent Liaison",
+              "email": "eversl@smhs.org",
+              "phone": "949-766-6009",
+              "id": "school-office-not-sure-who-to-ask-0"
+            }
+          ],
+          "keywords": [
+            "parent liaison",
+            "who do i ask",
+            "help"
+          ],
+          "id": "school-office-not-sure-who-to-ask"
+        },
+        {
+          "topic": "Main Office",
+          "note": "22062 Antonio Parkway, Rancho Santa Margarita, CA 92688 · Fax 949-766-6005",
+          "contacts": [
+            {
+              "name": "Main office",
+              "phone": "949-766-6000",
+              "id": "school-office-main-office-0"
+            },
+            {
+              "name": "Faculty & Staff Directory",
+              "url": "https://www.smhs.org/about/facultystaff",
+              "urlLabel": "Look up anyone at SMCHS",
+              "id": "school-office-main-office-1"
+            }
+          ],
+          "keywords": [
+            "address",
+            "fax",
+            "front office",
+            "directory",
+            "phone number"
+          ],
+          "id": "school-office-main-office"
+        }
+      ]
+    },
+    {
+      "id": "academics",
+      "title": "Academics",
+      "entries": [
+        {
+          "topic": "Concern about a teacher or a class",
+          "steps": [
+            "Talk to the teacher first.",
+            "Not resolved? Email the department chair for that subject.",
+            "Still not resolved? Contact the Registrar. For a concern about a particular class, contact your counselor."
+          ],
+          "contacts": [
+            {
+              "name": "Roza McCartan",
+              "role": "Registrar",
+              "email": "mccartanr@smhs.org",
+              "phone": "949-766-6090",
+              "id": "academics-concern-about-a-teacher-or-a-class-0"
+            }
+          ],
+          "keywords": [
+            "complaint",
+            "grade dispute",
+            "problem"
+          ],
+          "id": "academics-concern-about-a-teacher-or-a-class"
+        },
+        {
+          "topic": "What a class covers, or the material it uses",
+          "steps": [
+            "Email the teacher first.",
+            "Not resolved? Email the department chair below."
+          ],
+          "contacts": [
+            {
+              "name": "Tammy Thilken",
+              "role": "English",
+              "email": "thilkent@smhs.org",
+              "id": "academics-what-a-class-covers-or-the-material-it-u-0"
+            },
+            {
+              "name": "Noah Loungarikis",
+              "role": "Math",
+              "email": "loungarikisn@smhs.org",
+              "id": "academics-what-a-class-covers-or-the-material-it-u-1"
+            },
+            {
+              "name": "Francisco Calvo",
+              "role": "Performing Arts",
+              "email": "johnsonm@smhs.org",
+              "id": "academics-what-a-class-covers-or-the-material-it-u-2"
+            },
+            {
+              "name": "Ann Nunes",
+              "role": "Religion",
+              "email": "Nunesa@smhs.org",
+              "id": "academics-what-a-class-covers-or-the-material-it-u-3"
+            },
+            {
+              "name": "Karen Crede",
+              "role": "Science & Health",
+              "email": "credek@smhs.org",
+              "id": "academics-what-a-class-covers-or-the-material-it-u-4"
+            },
+            {
+              "name": "Tessa Fleming",
+              "role": "Social Studies",
+              "email": "flemingt@smhs.org",
+              "id": "academics-what-a-class-covers-or-the-material-it-u-5"
+            },
+            {
+              "name": "Pamela Toomey",
+              "role": "Visual Arts",
+              "email": "toomeyp@smhs.org",
+              "id": "academics-what-a-class-covers-or-the-material-it-u-6"
+            },
+            {
+              "name": "Thomas Gerlach",
+              "role": "World Language",
+              "email": "gerlacht@smhs.org",
+              "id": "academics-what-a-class-covers-or-the-material-it-u-7"
+            }
+          ],
+          "keywords": [
+            "department chair",
+            "curriculum",
+            "syllabus",
+            "books"
+          ],
+          "id": "academics-what-a-class-covers-or-the-material-it-u"
+        },
+        {
+          "topic": "Homework while you are absent",
+          "note": "Check the assignment in Microsoft Teams and OneNote. If it is not posted, email the teacher.",
+          "keywords": [
+            "missing work",
+            "sick",
+            "makeup"
+          ],
+          "id": "academics-homework-while-you-are-absent"
+        },
+        {
+          "topic": "Standardized testing",
+          "note": "Check the college counseling page, then ask your counselor if you still need more.",
+          "contacts": [
+            {
+              "name": "Counseling Office",
+              "email": "labc@smhs.org",
+              "phone": "949-766-6010",
+              "id": "academics-standardized-testing-0"
+            }
+          ],
+          "keywords": [
+            "SAT",
+            "ACT",
+            "PSAT",
+            "college board"
+          ],
+          "id": "academics-standardized-testing"
+        },
+        {
+          "topic": "Learning disabilities and academic support",
+          "contacts": [
+            {
+              "name": "Suzy Cutter",
+              "role": "Director, Auxiliary Studies Program (ASP)",
+              "email": "cutters@smhs.org",
+              "phone": "949-766-6085",
+              "id": "academics-learning-disabilities-and-academic-suppo-0"
+            }
+          ],
+          "keywords": [
+            "ASP",
+            "accommodations",
+            "IEP",
+            "504"
+          ],
+          "id": "academics-learning-disabilities-and-academic-suppo"
+        },
+        {
+          "topic": "Model United Nations (MUN)",
+          "contacts": [
+            {
+              "name": "John Remmell",
+              "role": "Social Studies Teacher",
+              "email": "remmell@smhs.org",
+              "phone": "949-766-6000",
+              "ext": "4067",
+              "id": "academics-model-united-nations-mun-0"
+            }
+          ],
+          "id": "academics-model-united-nations-mun"
+        },
+        {
+          "topic": "International Baccalaureate (IB)",
+          "contacts": [
+            {
+              "name": "Carly Gordon",
+              "email": "gordonc@smhs.org",
+              "id": "academics-international-baccalaureate-ib-0"
+            }
+          ],
+          "id": "academics-international-baccalaureate-ib"
+        },
+        {
+          "topic": "Advanced Placement (AP)",
+          "contacts": [
+            {
+              "name": "Seyram Bell",
+              "email": "bells@smhs.org",
+              "phone": "949-766-6068",
+              "id": "academics-advanced-placement-ap-0"
+            }
+          ],
+          "id": "academics-advanced-placement-ap"
+        },
+        {
+          "topic": "National Honor Society (NHS)",
+          "contacts": [
+            {
+              "name": "Mark Van Ness",
+              "role": "Science Teacher",
+              "email": "vannessm@smhs.org",
+              "phone": "949-766-6000",
+              "ext": "4064",
+              "id": "academics-national-honor-society-nhs-0"
+            }
+          ],
+          "id": "academics-national-honor-society-nhs"
+        },
+        {
+          "topic": "California Scholarship Federation (CSF)",
+          "contacts": [
+            {
+              "name": "Eva Hester",
+              "email": "hestere@smhs.org",
+              "phone": "949-766-6010",
+              "ext": "1069",
+              "id": "academics-california-scholarship-federation-csf-0"
+            }
+          ],
+          "id": "academics-california-scholarship-federation-csf"
+        },
+        {
+          "topic": "Ed tech and the One-to-One Tablet PC program",
+          "contacts": [
+            {
+              "name": "Jorge Ledezma",
+              "role": "Director of Educational Technology",
+              "email": "ledezmaj@smhs.org",
+              "phone": "949-766-6000",
+              "ext": "1082",
+              "id": "academics-ed-tech-and-the-one-to-one-tablet-pc-pro-0"
+            }
+          ],
+          "id": "academics-ed-tech-and-the-one-to-one-tablet-pc-pro"
+        },
+        {
+          "topic": "Tech support for your tablet",
+          "note": "Walk into the Tech Center in the Borchard Library Media Center, or email them.",
+          "contacts": [
+            {
+              "name": "Tech Center",
+              "role": "Borchard Library Media Center",
+              "email": "technologyservicecenter@smhs.org",
+              "id": "academics-tech-support-for-your-tablet-0"
+            }
+          ],
+          "keywords": [
+            "broken laptop",
+            "repair",
+            "surface",
+            "wifi"
+          ],
+          "id": "academics-tech-support-for-your-tablet"
+        }
+      ]
+    },
+    {
+      "id": "activities",
+      "title": "Activities",
+      "entries": [
+        {
+          "topic": "Clubs, ASB, dances, and senior events",
+          "contacts": [
+            {
+              "name": "Activities Office",
+              "email": "activities@smhs.org",
+              "phone": "949-766-6050",
+              "id": "activities-clubs-asb-dances-and-senior-events-0"
+            }
+          ],
+          "handles": [
+            "Student Council (ASB)",
+            "Extracurricular clubs and activities",
+            "Dance tickets",
+            "ETV announcements",
+            "Senior events"
+          ],
+          "keywords": [
+            "prom",
+            "homecoming",
+            "winter formal"
+          ],
+          "id": "activities-clubs-asb-dances-and-senior-events"
+        }
+      ]
+    },
+    {
+      "id": "attendance",
+      "title": "Attendance & Dean",
+      "entries": [
+        {
+          "topic": "Absences, dress code, discipline, parking, lockers",
+          "contacts": [
+            {
+              "name": "Attendance / Dean's Office",
+              "phone": "949-766-6020",
+              "id": "attendance-absences-dress-code-discipline-parking-l-0"
+            }
+          ],
+          "handles": [
+            "Absence and tardiness",
+            "Dress code",
+            "Detentions",
+            "Disciplinary problems and suspensions",
+            "Theft and vandalism",
+            "Parking permits",
+            "Locker issues"
+          ],
+          "keywords": [
+            "tardy",
+            "late",
+            "suspension",
+            "detention",
+            "uniform violation"
+          ],
+          "id": "attendance-absences-dress-code-discipline-parking-l"
+        }
+      ]
+    },
+    {
+      "id": "athletics",
+      "title": "Athletics",
+      "entries": [
+        {
+          "topic": "Concern about a coach",
+          "steps": [
+            "Talk to the coach first.",
+            "Not resolved? Email or call the Athletic Director."
+          ],
+          "contacts": [
+            {
+              "name": "Annie Garrett",
+              "role": "Athletic Director",
+              "email": "garretta@smhs.org",
+              "phone": "949-766-1065",
+              "id": "athletics-concern-about-a-coach-0"
+            }
+          ],
+          "id": "athletics-concern-about-a-coach"
+        },
+        {
+          "topic": "Athletic eligibility",
+          "note": "Ask the head coach of the team.",
+          "id": "athletics-athletic-eligibility"
+        },
+        {
+          "topic": "Physicals and team forms",
+          "contacts": [
+            {
+              "name": "Athletic Department Trainers",
+              "phone": "949-766-2212",
+              "id": "athletics-physicals-and-team-forms-0"
+            }
+          ],
+          "keywords": [
+            "clearance",
+            "physical form"
+          ],
+          "id": "athletics-physicals-and-team-forms"
+        },
+        {
+          "topic": "Athletic tickets",
+          "contacts": [
+            {
+              "name": "Athletic Office",
+              "phone": "949-766-6065",
+              "id": "athletics-athletic-tickets-0"
+            }
+          ],
+          "id": "athletics-athletic-tickets"
+        },
+        {
+          "topic": "You didn't make a team and want to know why",
+          "note": "Contact the head coach of the team.",
+          "keywords": [
+            "cut",
+            "tryouts"
+          ],
+          "id": "athletics-you-didn-t-make-a-team-and-want-to-know-"
+        },
+        {
+          "topic": "Sports calendar and season start and end dates",
+          "contacts": [
+            {
+              "name": "Athletic Office",
+              "email": "mcgregord@smhs.org",
+              "phone": "949-766-6065",
+              "id": "athletics-sports-calendar-and-season-start-and-end-0"
+            }
+          ],
+          "id": "athletics-sports-calendar-and-season-start-and-end"
+        }
+      ]
+    },
+    {
+      "id": "business",
+      "title": "Business Office",
+      "entries": [
+        {
+          "topic": "Tuition payments",
+          "contacts": [
+            {
+              "name": "Kim Read",
+              "email": "readk@smhs.org",
+              "phone": "949-766-6055",
+              "id": "business-tuition-payments-0"
+            }
+          ],
+          "keywords": [
+            "billing",
+            "invoice",
+            "FACTS"
+          ],
+          "id": "business-tuition-payments"
+        },
+        {
+          "topic": "Tuition assistance",
+          "contacts": [
+            {
+              "name": "Juliana Treadway",
+              "email": "treadwayj@smhs.org",
+              "phone": "949-766-6051",
+              "id": "business-tuition-assistance-0"
+            }
+          ],
+          "keywords": [
+            "financial aid",
+            "scholarship"
+          ],
+          "id": "business-tuition-assistance"
+        }
+      ]
+    },
+    {
+      "id": "campus-ministry",
+      "title": "Campus Ministry",
+      "entries": [
+        {
+          "topic": "Campus Ministry",
+          "contacts": [
+            {
+              "name": "Patrick Visconti",
+              "email": "viscontip@smhs.org",
+              "phone": "949-766-6000",
+              "ext": "1513",
+              "id": "campus-ministry-campus-ministry-0"
+            }
+          ],
+          "keywords": [
+            "mass",
+            "liturgy",
+            "prayer"
+          ],
+          "id": "campus-ministry-campus-ministry"
+        },
+        {
+          "topic": "Class retreats and Kairos",
+          "contacts": [
+            {
+              "name": "Chris De Vera",
+              "email": "cutchert@smhs.org",
+              "phone": "949-766-6000",
+              "ext": "1517",
+              "id": "campus-ministry-class-retreats-and-kairos-0"
+            }
+          ],
+          "id": "campus-ministry-class-retreats-and-kairos"
+        },
+        {
+          "topic": "Christian Service",
+          "contacts": [
+            {
+              "name": "Tori Cutcher",
+              "email": "cutchert@smhs.org",
+              "phone": "949-766-6000",
+              "ext": "1514",
+              "id": "campus-ministry-christian-service-0"
+            }
+          ],
+          "keywords": [
+            "service hours",
+            "volunteer"
+          ],
+          "id": "campus-ministry-christian-service"
+        }
+      ]
+    },
+    {
+      "id": "counseling",
+      "title": "Counseling",
+      "entries": [
+        {
+          "topic": "Your class schedule, or how you are doing",
+          "steps": [
+            "Start with your counselor."
+          ],
+          "contacts": [
+            {
+              "name": "Counseling Office",
+              "email": "labc@smhs.org",
+              "phone": "949-766-6010",
+              "id": "counseling-your-class-schedule-or-how-you-are-doing-0"
+            },
+            {
+              "name": "Wellness Program",
+              "url": "https://www.smhs.org/campus-life/wellnesspage/wellness",
+              "urlLabel": "Open the Wellness page",
+              "id": "counseling-your-class-schedule-or-how-you-are-doing-1"
+            }
+          ],
+          "keywords": [
+            "mental health",
+            "schedule change",
+            "drop a class",
+            "stress"
+          ],
+          "id": "counseling-your-class-schedule-or-how-you-are-doing"
+        },
+        {
+          "topic": "Tutors",
+          "note": "Pick up the list of faculty tutors in the Counseling Office. NHS student tutoring runs in the Library during Academic Periods, starting mid-September.",
+          "id": "counseling-tutors"
+        },
+        {
+          "topic": "Work permits",
+          "note": "Once you have a job, download the work permit form, have your employer complete and sign their part, then bring it to the Counseling Department to be signed and certified.",
+          "contacts": [
+            {
+              "name": "Cecilia Alsing",
+              "role": "Counseling Department",
+              "email": "alsingc@smhs.org",
+              "phone": "949-766-6011",
+              "id": "counseling-work-permits-0"
+            }
+          ],
+          "keywords": [
+            "job",
+            "employment"
+          ],
+          "id": "counseling-work-permits"
+        }
+      ]
+    },
+    {
+      "id": "communications",
+      "title": "Communications",
+      "entries": [
+        {
+          "topic": "Website, newsletter, and news stories",
+          "contacts": [
+            {
+              "name": "Communications Office",
+              "email": "pr@smhs.org",
+              "phone": "949-766-6000",
+              "ext": "1518",
+              "id": "communications-website-newsletter-and-news-stories-0"
+            }
+          ],
+          "handles": [
+            "The school's website",
+            "Receiving the weekly e-newsletter",
+            "Publicizing newsworthy stories and information"
+          ],
+          "keywords": [
+            "press",
+            "media",
+            "e-newsletter"
+          ],
+          "id": "communications-website-newsletter-and-news-stories"
+        },
+        {
+          "topic": "Logo usage",
+          "contacts": [
+            {
+              "name": "Teri Beauchamp",
+              "email": "beauchampt@smhs.org",
+              "phone": "949-766-1077",
+              "id": "communications-logo-usage-0"
+            }
+          ],
+          "keywords": [
+            "brand",
+            "graphics",
+            "trademark"
+          ],
+          "id": "communications-logo-usage"
+        }
+      ]
+    },
+    {
+      "id": "nurse",
+      "title": "Nurse's Office",
+      "entries": [
+        {
+          "topic": "Illness, injury, and medication at school",
+          "contacts": [
+            {
+              "name": "Rebecca Wood / Lisa Volpo",
+              "role": "Nursing",
+              "email": "deptofnursing@smhs.org",
+              "phone": "949-766-6029",
+              "id": "nurse-illness-injury-and-medication-at-school-0"
+            }
+          ],
+          "handles": [
+            "Report an accident",
+            "First aid during school",
+            "PE illness excuses",
+            "Medication at school release forms",
+            "Illness related questions"
+          ],
+          "keywords": [
+            "sick",
+            "health",
+            "injury",
+            "medicine"
+          ],
+          "id": "nurse-illness-injury-and-medication-at-school"
+        }
+      ]
+    },
+    {
+      "id": "registrar",
+      "title": "Registrar",
+      "entries": [
+        {
+          "topic": "Records, transcripts, and report cards",
+          "contacts": [
+            {
+              "name": "Roza McCartan",
+              "role": "Registrar",
+              "email": "mccartanr@smhs.org",
+              "phone": "949-766-6090",
+              "id": "registrar-records-transcripts-and-report-cards-0"
+            }
+          ],
+          "handles": [
+            "School records",
+            "Change of address or email",
+            "Report cards"
+          ],
+          "keywords": [
+            "transcript",
+            "grades record"
+          ],
+          "id": "registrar-records-transcripts-and-report-cards"
+        }
+      ]
+    },
+    {
+      "id": "student-services",
+      "title": "Student Services",
+      "entries": [
+        {
+          "topic": "School calendar and Aeries student codes",
+          "contacts": [
+            {
+              "name": "Kim Howard",
+              "email": "howardk@smhs.org",
+              "phone": "949-713-4300",
+              "id": "student-services-school-calendar-and-aeries-student-codes-0"
+            }
+          ],
+          "handles": [
+            "The school calendar",
+            "Student codes to log into Aeries"
+          ],
+          "keywords": [
+            "login",
+            "portal",
+            "password"
+          ],
+          "id": "student-services-school-calendar-and-aeries-student-codes"
+        }
+      ]
+    },
+    {
+      "id": "eagle-foundation",
+      "title": "Eagle Foundation & Alumni",
+      "entries": [
+        {
+          "topic": "Donations, fundraising, and scholarships",
+          "contacts": [
+            {
+              "name": "Santa Margarita Eagle Foundation",
+              "email": "advancement@smeaglefoundation.org",
+              "phone": "949-766-6080",
+              "id": "eagle-foundation-donations-fundraising-and-scholarships-0"
+            }
+          ],
+          "handles": [
+            "Fundraising",
+            "Donations",
+            "Supporting SMCHS",
+            "Scholarships"
+          ],
+          "id": "eagle-foundation-donations-fundraising-and-scholarships"
+        },
+        {
+          "topic": "Alumni, reunions, and Class Notes",
+          "contacts": [
+            {
+              "name": "Alumni Office",
+              "email": "alumni@smeaglefoundation.org",
+              "phone": "949-766-6000",
+              "ext": "1165",
+              "id": "eagle-foundation-alumni-reunions-and-class-notes-0"
+            }
+          ],
+          "handles": [
+            "Reunions",
+            "Getting involved as a graduate",
+            "Updating alumni contact information",
+            "Submitting a Class Note for Wings magazine"
+          ],
+          "id": "eagle-foundation-alumni-reunions-and-class-notes"
+        }
+      ]
+    },
+    {
+      "id": "campus",
+      "title": "Around Campus",
+      "entries": [
+        {
+          "topic": "Uniforms",
+          "contacts": [
+            {
+              "name": "Campus Store",
+              "phone": "949-766-6075",
+              "id": "campus-uniforms-0"
+            }
+          ],
+          "keywords": [
+            "dress code",
+            "polo",
+            "PE clothes"
+          ],
+          "id": "campus-uniforms"
+        },
+        {
+          "topic": "Library",
+          "contacts": [
+            {
+              "name": "Library",
+              "phone": "949-766-6070",
+              "id": "campus-library-0"
+            }
+          ],
+          "id": "campus-library"
+        },
+        {
+          "topic": "School books",
+          "contacts": [
+            {
+              "name": "eCampus",
+              "url": "https://smhs.ecampus.com/",
+              "urlLabel": "Open the bookstore",
+              "id": "campus-school-books-0"
+            }
+          ],
+          "keywords": [
+            "textbooks",
+            "rental"
+          ],
+          "id": "campus-school-books"
+        },
+        {
+          "topic": "Lost and found",
+          "contacts": [
+            {
+              "name": "Welcome Center",
+              "phone": "949-766-6000",
+              "ext": "1147",
+              "id": "campus-lost-and-found-0"
+            }
+          ],
+          "id": "campus-lost-and-found"
+        },
+        {
+          "topic": "Yearbook",
+          "contacts": [
+            {
+              "name": "Todd Naylor",
+              "role": "Yearbook Coordinator",
+              "email": "yearbook@smhs.org",
+              "phone": "949-766-6000",
+              "ext": "4050",
+              "id": "campus-yearbook-0"
+            }
+          ],
+          "id": "campus-yearbook"
+        },
+        {
+          "topic": "Facilities reservations",
+          "contacts": [
+            {
+              "name": "Facilities",
+              "email": "facilitiesreservations@smhs.org",
+              "phone": "949-766-6000",
+              "ext": "1525",
+              "id": "campus-facilities-reservations-0"
+            }
+          ],
+          "keywords": [
+            "book a room",
+            "gym",
+            "field"
+          ],
+          "id": "campus-facilities-reservations"
+        }
+      ]
+    },
+    {
+      "id": "admissions",
+      "title": "Admissions",
+      "entries": [
+        {
+          "topic": "Applying, transferring, and placement exams",
+          "contacts": [
+            {
+              "name": "Admissions Office",
+              "email": "admissions@smhs.org",
+              "phone": "949-766-6076",
+              "id": "admissions-applying-transferring-and-placement-exam-0"
+            }
+          ],
+          "handles": [
+            "Prospective students",
+            "Transfer students",
+            "Admission procedures",
+            "Freshman placement exam dates"
+          ],
+          "id": "admissions-applying-transferring-and-placement-exam"
+        },
+        {
+          "topic": "International students",
+          "contacts": [
+            {
+              "name": "Joy Francis",
+              "email": "francisj@smhs.org",
+              "phone": "949-766-6076",
+              "id": "admissions-international-students-0"
+            }
+          ],
+          "keywords": [
+            "visa",
+            "exchange"
+          ],
+          "id": "admissions-international-students"
+        }
+      ]
+    }
+  ],
+  "diningItems": [
+    {
+      "id": "bk-oats",
+      "section": "breakfast",
+      "group": "Grab & Go",
+      "name": "Overnight Protein Oats",
+      "description": "greek yogurt, fresh fruit, vital protein collagen",
+      "price": "$8.00"
+    },
+    {
+      "id": "bk-fruit",
+      "section": "breakfast",
+      "group": "Grab & Go",
+      "name": "Seasonal Fruit Cup",
+      "price": "$7.00"
+    },
+    {
+      "id": "bk-eggs",
+      "section": "breakfast",
+      "group": "Grab & Go",
+      "name": "Hard Boiled Eggs",
+      "price": "$5.50"
+    },
+    {
+      "id": "bk-bites",
+      "section": "breakfast",
+      "group": "Grab & Go",
+      "name": "Raw Protein Bites",
+      "description": "dates, walnuts, almonds, vital protein collagen, coco powder, maple syrup, almond butter, vanilla, sea salt, shredded coconut",
+      "price": "$7.00"
+    },
+    {
+      "id": "bk-mezze",
+      "section": "breakfast",
+      "group": "Grab & Go",
+      "name": "Mezze Box",
+      "description": "cucumbers, celery, carrots, pita, hummus & labneh",
+      "price": "$7.00"
+    },
+    {
+      "id": "bk-protein-pack",
+      "section": "breakfast",
+      "group": "Grab & Go",
+      "name": "Eagle Protein Pack",
+      "description": "hobb's turkey, cheese, fresh fruit, pita",
+      "price": "$9.00"
+    },
+    {
+      "id": "bk-glow",
+      "section": "breakfast",
+      "group": "Made to Order",
+      "name": "Strawberry Glow Smoothie",
+      "description": "strawberries, banana, avocado, dates, vital protein collagen, sea moss, hyaluronic acid, maple syrup, strawberry glaze, almond milk, organic coconut crème",
+      "price": "$12.00"
+    },
+    {
+      "id": "bk-creatine",
+      "section": "breakfast",
+      "group": "Made to Order",
+      "name": "Creatine Berry Protein Smoothie",
+      "description": "banana, raspberries, almond butter, chocolate protein powder, cymbiotika creatine, maple syrup, dates, cacao powder, toffee stevia, vanilla extract, almond milk",
+      "price": "$12.00"
+    },
+    {
+      "id": "bk-scramble",
+      "section": "breakfast",
+      "group": "Made to Order",
+      "name": "Eagle Scramble",
+      "description": "eggs, ricotta, country sourdough",
+      "price": "$9.00"
+    },
+    {
+      "id": "bk-avo-toast",
+      "section": "breakfast",
+      "group": "Made to Order",
+      "name": "Avocado Toast",
+      "description": "chopped avocado, cream cheese, chili flakes, lemon zest, cilantro, chili oil, smoked sea salt",
+      "price": "$10.00"
+    },
+    {
+      "id": "bk-quesadilla",
+      "section": "breakfast",
+      "group": "Made to Order",
+      "name": "Breakfast Quesadilla",
+      "description": "eggs, crispy bacon, smashed avocado, pepper jack cheese, pico de gallo",
+      "price": "$11.00"
+    },
+    {
+      "id": "bk-burrito",
+      "section": "breakfast",
+      "group": "Made to Order",
+      "name": "SM Burrito",
+      "description": "eggs, bacon, tillamook cheddar, crispy potatoes, chipotle aioli",
+      "price": "$11.00"
+    },
+    {
+      "id": "bk-bagel",
+      "section": "breakfast",
+      "group": "Made to Order",
+      "name": "Eagle Bagel",
+      "description": "everything bagel, fried egg, bacon, tillamook cheddar, chipotle aioli",
+      "price": "$12.00"
+    },
+    {
+      "id": "bk-bagel-cc",
+      "section": "breakfast",
+      "group": "Made to Order",
+      "name": "Bagel with Cream Cheese & Butter",
+      "description": "ask for our bagel options",
+      "price": "$5.00"
+    },
+    {
+      "id": "ln-buffalo",
+      "section": "lunch",
+      "group": "Cold Items",
+      "name": "Buffalo Chicken Salad",
+      "description": "iceberg lettuce, crunchy or grilled chicken, tomatoes, cucumber, shredded cheese, bacon, avocado, ranch & buffalo sauce",
+      "price": "$9.75"
+    },
+    {
+      "id": "ln-caesar",
+      "section": "lunch",
+      "group": "Cold Items",
+      "name": "Chicken Caesar Salad or Wrap",
+      "description": "romaine, grilled chicken, parmesan cheese, croutons, caesar dressing",
+      "price": "$9.75"
+    },
+    {
+      "id": "ln-turkey",
+      "section": "lunch",
+      "group": "Cold Items",
+      "name": "Turkey Sandwich",
+      "description": "turkey, tomato, lettuce, mayo, sourdough or squaw bread, miss vickies chips",
+      "price": "$9.75"
+    },
+    {
+      "id": "ln-acai",
+      "section": "lunch",
+      "group": "Cold Items",
+      "name": "Acai Bowl",
+      "description": "acai, mixed berries, bananas, granola, honey",
+      "price": "$9.75"
+    },
+    {
+      "id": "ln-steak-q",
+      "section": "lunch",
+      "group": "Hot Items",
+      "name": "Steak Quesadilla",
+      "description": "steak, cheese, caramelized onions, guacamole, pico de gallo",
+      "price": "$10.00"
+    },
+    {
+      "id": "ln-cheese-q",
+      "section": "lunch",
+      "group": "Hot Items",
+      "name": "Cheese Quesadilla",
+      "price": "$5.00"
+    },
+    {
+      "id": "ln-pastor",
+      "section": "lunch",
+      "group": "Hot Items",
+      "name": "Al Pastor Burrito",
+      "description": "seasoned pork, cheese, rice, beans, pico de gallo, green salsa",
+      "price": "$9.50"
+    },
+    {
+      "id": "ln-brc",
+      "section": "lunch",
+      "group": "Hot Items",
+      "name": "BRC Burrito",
+      "description": "beans, rice, cheese",
+      "price": "$6.00"
+    },
+    {
+      "id": "ln-eagle-bowl",
+      "section": "lunch",
+      "group": "Hot Items",
+      "name": "Eagle Bowl",
+      "description": "chicken or steak, rice, beans, cheese, onions, cilantro, pico de gallo",
+      "price": "$9.75 / $11.00"
+    },
+    {
+      "id": "ln-alfredo",
+      "section": "lunch",
+      "group": "Hot Items",
+      "name": "Chicken Fettuccine Alfredo",
+      "description": "grilled chicken, fettuccine, parmesan cheese, alfredo sauce",
+      "price": "$9.75"
+    },
+    {
+      "id": "ln-spaghetti",
+      "section": "lunch",
+      "group": "Hot Items",
+      "name": "Spaghetti & Meatballs",
+      "price": "$10.00"
+    },
+    {
+      "id": "ln-burger",
+      "section": "lunch",
+      "group": "Hot Items",
+      "name": "SM Burger & Fries",
+      "description": "1/4 lb all-beef patty, cheese, lettuce, tomato, thousand island dressing",
+      "price": "$11.00"
+    },
+    {
+      "id": "ln-tenders",
+      "section": "lunch",
+      "group": "Hot Items",
+      "name": "Chicken Tenders & Fries",
+      "price": "$9.75"
+    },
+    {
+      "id": "ln-teriyaki",
+      "section": "lunch",
+      "group": "Hot Items",
+      "name": "Teriyaki Chicken Bowl",
+      "description": "grilled teriyaki chicken, rice, veggies, teriyaki sauce",
+      "price": "$9.75"
+    },
+    {
+      "id": "ln-loaded-fries",
+      "section": "lunch",
+      "group": "Hot Items",
+      "name": "Loaded Fries",
+      "description": "fries, cheese sauce, pico de gallo, sour cream",
+      "price": "$8.00"
+    },
+    {
+      "id": "ln-nachos",
+      "section": "lunch",
+      "group": "Hot Items",
+      "name": "Chili Cheese Nachos",
+      "description": "beef chili, cheese, sour cream, house-made corn tortilla chips",
+      "price": "$9.00"
+    },
+    {
+      "id": "ln-curly",
+      "section": "lunch",
+      "group": "Sides",
+      "name": "Curly Fries",
+      "price": "$6.00"
+    },
+    {
+      "id": "ln-pickle",
+      "section": "lunch",
+      "group": "Sides",
+      "name": "Pickle Fries",
+      "price": "$8.00"
+    },
+    {
+      "id": "el-oats",
+      "section": "elite",
+      "group": "Grab & Go",
+      "name": "Overnight Protein Oats",
+      "description": "greek yogurt, fresh fruit, vital protein collagen",
+      "price": "$8.00"
+    },
+    {
+      "id": "el-fruit",
+      "section": "elite",
+      "group": "Grab & Go",
+      "name": "Seasonal Fruit Cup",
+      "price": "$7.00"
+    },
+    {
+      "id": "el-eggs",
+      "section": "elite",
+      "group": "Grab & Go",
+      "name": "Hard Boiled Eggs",
+      "price": "$5.50"
+    },
+    {
+      "id": "el-balls",
+      "section": "elite",
+      "group": "Grab & Go",
+      "name": "Protein Raw Balls",
+      "description": "dates, walnuts, almonds, vital protein collagen, coco powder, maple syrup, almond butter, vanilla, sea salt, shredded coconut",
+      "price": "$7.00"
+    },
+    {
+      "id": "el-mezze",
+      "section": "elite",
+      "group": "Grab & Go",
+      "name": "Mezze Box",
+      "description": "cucumbers, celery, carrots, pita, hummus & labneh",
+      "price": "$7.00"
+    },
+    {
+      "id": "el-protein-pack",
+      "section": "elite",
+      "group": "Grab & Go",
+      "name": "Eagle Protein Pack",
+      "description": "hobb's turkey, cheese, fresh fruit, pita",
+      "price": "$9.00"
+    },
+    {
+      "id": "el-glow",
+      "section": "elite",
+      "group": "Made to Order",
+      "name": "Strawberry Glow Smoothie",
+      "description": "strawberries, banana, avocado, dates, vital protein collagen, sea moss, hyaluronic acid, maple syrup, strawberry glaze, almond milk, organic coconut crème",
+      "price": "$12.00"
+    },
+    {
+      "id": "el-creatine",
+      "section": "elite",
+      "group": "Made to Order",
+      "name": "Creatine Berry Protein Smoothie",
+      "description": "banana, raspberries, almond butter, chocolate protein powder, cymbiotika creatine, maple syrup, dates, cacao powder, toffee stevia, vanilla extract, almond milk",
+      "price": "$12.00"
+    },
+    {
+      "id": "el-wrap",
+      "section": "elite",
+      "group": "Made to Order",
+      "name": "Turkey Avocado Wrap",
+      "description": "whole wheat tortilla, hobb's turkey, avocado, lettuce, chipotle aioli",
+      "price": "$9.50"
+    },
+    {
+      "id": "el-buddha",
+      "section": "elite",
+      "group": "Made to Order",
+      "name": "Buddha Bowl",
+      "description": "grilled chicken, brown rice, mixed vegetables, avocado, hummus, sriracha aioli",
+      "price": "$10.00"
+    },
+    {
+      "id": "el-taco-bowl",
+      "section": "elite",
+      "group": "Made to Order",
+      "name": "SM Taco Bowl",
+      "description": "grilled chicken, steak, or al pastor with spanish rice, beans, mixed vegetables, chipotle aioli",
+      "price": "$10.00"
+    },
+    {
+      "id": "el-stirfry",
+      "section": "elite",
+      "group": "Made to Order",
+      "name": "Stir-Fry Bowl",
+      "description": "steak, brown rice, broccoli, teriyaki sauce",
+      "price": "$10.00"
+    },
+    {
+      "id": "el-pasta",
+      "section": "elite",
+      "group": "Made to Order",
+      "name": "Protein Pasta",
+      "description": "grilled chicken, mixed veggies, pink sauce with protein pasta",
+      "price": "$10.00"
+    }
+  ],
+  "outlines": [
+    {
+      "id": "out-1-144516",
+      "points": [
+        [
+          -149.407,
+          185.701
+        ],
+        [
+          -150.898,
+          205.587
+        ],
+        [
+          -95.116,
+          214.583
+        ],
+        [
+          -91.987,
+          204.096
+        ],
+        [
+          -98.45,
+          203.102
+        ],
+        [
+          -93.23,
+          180.73
+        ],
+        [
+          -112.398,
+          178.032
+        ],
+        [
+          -114.358,
+          191.17
+        ]
+      ],
+      "building": "G",
+      "label": "G"
+    },
+    {
+      "id": "out-1-112507",
+      "points": [
+        [
+          -157.224,
+          155.303
+        ],
+        [
+          -144.298,
+          173.445
+        ],
+        [
+          -176.612,
+          198.546
+        ],
+        [
+          -192.77,
+          178.167
+        ]
+      ],
+      "building": "C",
+      "label": "C"
+    },
+    {
+      "id": "out-2-236598",
+      "points": [
+        [
+          -134.811,
+          165.255
+        ],
+        [
+          -118.074,
+          154.314
+        ],
+        [
+          -121.678,
+          149.343
+        ],
+        [
+          -115.34,
+          144.994
+        ],
+        [
+          -122.838,
+          134.556
+        ],
+        [
+          -128.68,
+          139.817
+        ],
+        [
+          -131.911,
+          135.675
+        ],
+        [
+          -147.033,
+          146.032
+        ],
+        [
+          -142.973,
+          153.033
+        ],
+        [
+          -146.411,
+          155.846
+        ],
+        [
+          -141.564,
+          163.178
+        ],
+        [
+          -137.463,
+          161.314
+        ]
+      ],
+      "building": "D",
+      "label": "Library"
+    },
+    {
+      "id": "out-1-93956",
+      "points": [
+        [
+          -170.398,
+          146.663
+        ],
+        [
+          -172.76,
+          157.716
+        ],
+        [
+          -198.238,
+          152.997
+        ],
+        [
+          -195.131,
+          130.269
+        ],
+        [
+          -192.148,
+          130.393
+        ],
+        [
+          -188.171,
+          100.462
+        ],
+        [
+          -150.264,
+          104.561
+        ],
+        [
+          -153.123,
+          126.171
+        ],
+        [
+          -176.488,
+          122.569
+        ],
+        [
+          -180.217,
+          145.297
+        ]
+      ],
+      "building": "B",
+      "label": "B"
+    },
+    {
+      "id": "out-2-124438",
+      "points": [
+        [
+          -139.078,
+          112.25
+        ],
+        [
+          -141.315,
+          127.278
+        ],
+        [
+          -126.898,
+          129.141
+        ],
+        [
+          -124.91,
+          114.504
+        ]
+      ],
+      "label": "Chapel"
+    },
+    {
+      "id": "out-3-192565",
+      "points": [
+        [
+          -87.003,
+          173.506
+        ],
+        [
+          -78.676,
+          184.226
+        ],
+        [
+          -85.263,
+          190.025
+        ],
+        [
+          -78.8,
+          199.34
+        ],
+        [
+          -42.384,
+          172.017
+        ],
+        [
+          -58.044,
+          151.773
+        ]
+      ],
+      "building": "S",
+      "label": "S"
+    },
+    {
+      "id": "out-4-224258",
+      "points": [
+        [
+          -110.866,
+          149.539
+        ],
+        [
+          -113.227,
+          164.07
+        ],
+        [
+          -98.188,
+          166.057
+        ],
+        [
+          -96.324,
+          151.278
+        ]
+      ],
+      "label": "Store"
+    },
+    {
+      "id": "out-5-271154",
+      "points": [
+        [
+          26.097,
+          60.432
+        ],
+        [
+          67.484,
+          65.027
+        ],
+        [
+          72.207,
+          30.626
+        ],
+        [
+          28.707,
+          26.88
+        ]
+      ],
+      "building": "R",
+      "label": "R"
+    },
+    {
+      "id": "out-1-227254",
+      "points": [
+        [
+          -170.398,
+          51.474
+        ],
+        [
+          -173.878,
+          77.803
+        ],
+        [
+          -138.084,
+          84.509
+        ],
+        [
+          -130.627,
+          92.507
+        ],
+        [
+          -109.25,
+          75.816
+        ],
+        [
+          -123.17,
+          58.449
+        ]
+      ],
+      "building": "A",
+      "label": "A"
+    },
+    {
+      "id": "out-2-246582",
+      "points": [
+        [
+          -58.044,
+          149.892
+        ],
+        [
+          -40.147,
+          174.235
+        ],
+        [
+          2.358,
+          142.441
+        ],
+        [
+          -18.024,
+          119.092
+        ]
+      ],
+      "label": "Gym"
+    }
+  ]
+}

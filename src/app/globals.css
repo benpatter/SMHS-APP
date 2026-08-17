@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Brand tokens mirrored from tailwind config for non-utility use. */
+  --royal: #1a4784;
+  --gold: #b4a365;
+  --anthracite: #282828;
+  --lightgray: #999999;
+
+  /* Light theme surfaces. */
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --text: #282828;
+  --muted: #5f6671;
+  --divider: #e2e5ea;
+
+  /* Space-separated channels so Tailwind's /opacity modifiers still work
+     (bg-danger/10, border-danger/40). */
+  --danger: 185 28 28;
+}
+
+.dark {
+  /* Dark mode KEEPS the royal-blue/gold identity — deep blue-black neutrals. */
+  --bg: #0c1626;
+  --surface: #122036;
+  --text: #f1f4f9;
+  --muted: #9fb0c9;
+  --divider: #25344c;
+  /* Lifted for contrast on dark surfaces. #4f7cc0 only reached 3.9:1 on
+     --surface, which fails AA for the 11-12px labels that use it (bottom-nav
+     tabs, pills); this clears 5:1 while staying in the royal family. */
+  --royal: #6690cc;
+  /* #b91c1c only reaches 2.5:1 on dark surfaces; this clears AA. */
+  --danger: 248 113 113;
+}
+
+html,
+body {
+  height: 100%;
+  /* The document itself NEVER scrolls — the app shell is exactly one viewport
+     tall and <main> is the only scroller. Without this the WKWebView bounces
+     past the page and exposes the native background behind it (the royal
+     splash color), which reads as a stray blue bar. `overscroll-behavior`
+     alone does NOT stop that bounce on iOS; the document has to be unscrollable. */
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans), system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* NO bottom safe-area padding here. body is height:100% with border-box, so
+     padding is subtracted from the viewport while the shell inside is a full
+     100dvh — that made every page overflow by exactly the inset and scroll a
+     few pixels with no content to show. The bottom inset is paid by the fixed
+     BottomNav (.safe-bottom) and by main's --nav-safe padding instead. */
+}
+
+/* Disable the friendly tap-highlight; we manage our own active states. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Every text-entry control clears the 48dp Android minimum. Checkboxes and
+   radios are excluded — they're sized deliberately and sit inside larger
+   labels that take the tap. */
+input:not([type='checkbox']):not([type='radio']),
+select,
+textarea {
+  min-height: 48px;
+}
+
+@layer components {
+  .app-card {
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: 4px;
+  }
+
+  /* Institutional wordmark / major titles — classical serif caps, sparing. */
+  .wordmark {
+    font-family: var(--font-display), 'Cinzel', Georgia, serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .section-title {
+    font-family: var(--font-display), 'Cinzel', Georgia, serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  /* Tabular numerals so the live countdown doesn't jitter as digits change. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  /* 48px, not 44: iOS HIG asks for 44pt, Android Material for 48dp. This ships
+     to both, so the stricter of the two wins everywhere. */
+  .tap {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* Grows a small control's touch target to the 48×48 minimum without changing
+     a pixel of layout — for inline links and switches that would be visually
+     wrong at 48px tall but are too small to hit reliably on glass. */
+  .tap-expand {
+    position: relative;
+  }
+
+  .tap-expand::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  /* Notch / Dynamic Island / home-indicator insets. The viewport is
+     `viewport-fit=cover`, so every surface pinned to a screen edge (sticky
+     header, fixed overlays, bottom nav) has to pay the inset back itself or it
+     renders underneath the hardware. */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Landscape: the rounded corners and camera housing eat the short edges. */
+  .safe-x {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Honor reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* The white name callout above the selected pin on the admin campus map. */
+.leaflet-tooltip.poi-callout {
+  border: none;
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+}

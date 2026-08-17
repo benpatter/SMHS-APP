@@ -1,0 +1,25 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "next-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "static-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "serve"],
+      "autoPort": true
+    },
+    {
+      "name": "smchs-proxy",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server/index.mjs"],
+      "port": 8787,
+      "autoPort": false
+    }
+  ]
+}

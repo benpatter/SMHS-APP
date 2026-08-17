@@ -1,0 +1,23 @@
+node_modules/
+.next/
+out/
+.DS_Store
+*.log
+ios/
+android/
+.env*
+.build-stamp
+tsconfig.tsbuildinfo
+.playwright-mcp/
+server/.data/
+.ruvnet-brain/
+ruvector.db
+.swarm/
+
+# The deployment template must ship with the repo (the rule above hides .env itself).
+!.env.example
+.praxis/
+
+# Build artifacts created when HOME=/opt/smapp (see PRODUCTION-SETUP.md)
+.config/
+.npm/

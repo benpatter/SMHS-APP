@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "smchs-app": {
+      "command": "node",
+      "args": ["server/mcp.mjs"],
+      "env": {
+        "SMCHS_API": "http://127.0.0.1:8080"
+      }
+    }
+  }
+}
