@@ -152,7 +152,18 @@ const DAY_TYPES = ['regular', 'all-periods', 'meeting', 'mass', 'minimum', 'rall
 const HHMM = z.string().regex(/^\d{2}:\d{2}$/, 'HH:mm')
 const ISO_DATE = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'yyyy-MM-dd')
 
-const todayIso = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date())
+// Assembled from parts, not from a locale's date order: Node builds without
+// full ICU fall back from en-CA to en-US and format "08/17/2026", which is not
+// a date anything downstream can parse.
+const DAY_FMT = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit',
+})
+const todayIso = () => {
+  const p = Object.create(null)
+  for (const { type, value } of DAY_FMT.formatToParts(new Date())) p[type] = value
+  const iso = `${p.year}-${p.month}-${p.day}`
+  return /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso : new Date().toISOString().slice(0, 10)
+}
 const addDays = (iso, n) => {
   const d = new Date(`${iso}T12:00:00Z`)
   d.setUTCDate(d.getUTCDate() + n)

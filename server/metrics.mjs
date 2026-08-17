@@ -48,18 +48,33 @@ const MAX_EVENTS_PER_POST = 25;
 const MAX_SESSION_SECONDS = 4 * 60 * 60; // clamp: nobody's "session" is 4h+
 
 const TZ = 'America/Los_Angeles';
-const DAY_FMT = new Intl.DateTimeFormat('en-CA', {
+// Parts, never a locale's date order. Node builds without full ICU (small-icu
+// is common on Alpine) silently fall back from en-CA to en-US, which formats
+// "08/17/2026" instead of "2026-08-17" and made every date derived from it
+// invalid. Timezone data ships even in trimmed ICU builds, so only the locale
+// assumption was unsafe.
+const DAY_FMT = new Intl.DateTimeFormat('en-US', {
   timeZone: TZ,
   year: 'numeric',
   month: '2-digit',
   day: '2-digit',
 });
 
+const ISO_DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 /** Today's calendar date at the school ("YYYY-MM-DD"). */
-const todayIso = () => DAY_FMT.format(new Date());
+function todayIso() {
+  const parts = Object.create(null);
+  for (const { type, value } of DAY_FMT.formatToParts(new Date())) parts[type] = value;
+  const iso = `${parts.year}-${parts.month}-${parts.day}`;
+  // Belt and braces: an ICU build odd enough to break this must not take the
+  // server down. UTC is at most a few hours ahead of the school's date.
+  return ISO_DAY_RE.test(iso) ? iso : new Date().toISOString().slice(0, 10);
+}
 
 /** iso date ± n days (dates are TZ-independent once anchored at noon UTC). */
 function addDays(iso, n) {
+  if (!ISO_DAY_RE.test(iso)) throw new RangeError(`addDays: bad date "${iso}"`);
   const d = new Date(`${iso}T12:00:00Z`);
   d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0, 10);
@@ -115,6 +130,13 @@ function metricsDb() {
     ) STRICT;
     CREATE INDEX IF NOT EXISTS idx_tickets_device ON tickets(device_id);
   `);
+  // Rows stamped while todayIso() was locale-broken carry "MM/DD/YYYY" days,
+  // which sort before every real date and would be silently purged as ancient.
+  // Rewrite them to ISO once so the school keeps the usage it collected.
+  db.exec(
+    "UPDATE events SET day = substr(day, 7, 4) || '-' || substr(day, 1, 2) || '-' || substr(day, 4, 2) " +
+      "WHERE day LIKE '__/__/____'",
+  );
   // Databases created before the optional contact email existed lack the column.
   const ticketCols = db.prepare('SELECT name FROM pragma_table_info(?)').all('tickets');
   if (!ticketCols.some((c) => c.name === 'contact_email')) {
@@ -181,12 +203,22 @@ function metricsDb() {
     resolveTicket: db.prepare('UPDATE tickets SET resolved_at = ? WHERE num = ?'),
     reopenTicket: db.prepare('UPDATE tickets SET resolved_at = NULL WHERE num = ?'),
   };
-  purgeOldMetrics();
   // The 30-day limit is a promise, not a query filter: expired rows are
   // physically deleted on a timer, so they are unrecoverable even from the
-  // database file itself.
-  setInterval(purgeOldMetrics, PURGE_INTERVAL_MS).unref();
+  // database file itself. The timer is armed BEFORE the first sweep runs — a
+  // sweep that throws must never leave retention unenforced for the life of
+  // the process, and must never fail the request that happened to open the db.
+  setInterval(sweep, PURGE_INTERVAL_MS).unref();
+  sweep();
   return db;
+}
+
+function sweep() {
+  try {
+    purgeOldMetrics();
+  } catch (err) {
+    console.error('[metrics] purge failed:', err);
+  }
 }
 
 export function purgeOldMetrics() {
