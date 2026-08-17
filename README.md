@@ -1,34 +1,32 @@
 # SMCHS App
 
-One fast, offline-first app for **Santa Margarita Catholic High School** Eagles. Web and PWA, wrappable to iOS and Android via Capacitor from a single codebase. The home screen is the hero: a live "time left in this period" countdown.
+Student app for Santa Margarita Catholic High School. It runs as a website, installs as a PWA, and ships to iOS and Android through Capacitor from the same build.
 
-One Node process serves everything, the static app and the live-data API, same-origin on one port. No database to run, no external services beyond SMTP.
+The main screen counts down the time left in the current period. Once a device has the schedule, that keeps working with no network.
 
-**Stack:** Next.js 14 (App Router, TypeScript, static export), Tailwind, Zustand, Luxon, Capacitor. The server is `server/index.mjs`, a single file using only Node built-ins, including `node:sqlite`. Zero runtime npm dependencies on the server side.
+`server/index.mjs` serves the static build and the API from a single port, same origin. It uses Node built-ins only, `node:sqlite` included, so the server has no npm dependencies and there is no database to administer. The client is Next.js 14 with static export, plus Tailwind, Zustand, and Luxon.
 
 ## Deploy
 
-**[DEPLOY-SMHS.md](DEPLOY-SMHS.md)** is the start-to-finish runbook for the school server (Alpine Linux, NginxProxyManager, an internal mail relay). Follow it top to bottom and nothing else is needed.
-
-[DEPLOY.md](DEPLOY.md) is the general guide for any other host.
+[DEPLOY-SMHS.md](DEPLOY-SMHS.md) covers the school's server: Alpine Linux, NginxProxyManager, an internal SMTP relay. [DEPLOY.md](DEPLOY.md) covers anything else.
 
 ```sh
 git clone https://github.com/benpatter/SMHS-APP.git /opt/smapp
-cp /opt/smapp/.env.example /opt/smapp/.env   # fill it in
-/opt/smapp/start-prod.sh                     # installs, builds, serves
+cp /opt/smapp/.env.example /opt/smapp/.env    # fill it in
+/opt/smapp/start-prod.sh
 ```
 
-Requires Node 22.13 or newer. Put a TLS reverse proxy in front of it.
+`start-prod.sh` installs dependencies, rebuilds when the checkout has moved since the last build, and serves on `$PORT` (8080 unless you change it). You need Node 22.13 or newer and a reverse proxy in front of it for TLS.
 
 ## Develop
 
 ```sh
 npm install
-npm run dev                 # app on http://localhost:3000
-node server/index.mjs       # API on http://localhost:8787
-
-./start.sh [--build]        # one process, app + API on :3000, like production
+npm run dev                 # app on :3000
+node server/index.mjs       # API on :8787
 ```
+
+`./start.sh` runs the production arrangement locally instead, with both on :3000.
 
 Native shells:
 
@@ -39,22 +37,24 @@ npm run cap:sync
 npx cap open ios
 ```
 
-Native builds fetch cross-origin, so set `NEXT_PUBLIC_API_BASE=https://<your-domain>` for Capacitor. The web build is same-origin and needs nothing.
+Capacitor builds fetch across origins, so point them at the server with `NEXT_PUBLIC_API_BASE=https://<your-domain>`. The web build uses its own origin and needs nothing.
 
 ## How it works
 
-- **The countdown is pure and offline.** `src/lib/scheduleEngine.ts` is a deterministic `(now, config, profile) → state`. No network needed once the schedule is cached.
-- **Clients never call outside sources.** The server scrapes and caches smhs.org and the school's calendar API, so thousands of devices polling stay a handful of upstream requests. Set `CALENDAR_API_KEY` to use the school's BellCalSync feed; without it the app parses the public CalendarWiz feed instead.
-- **Admins publish in-app.** Announcements, notices, schedule edits, dining, contacts, prayers, and map pins live server-side at `/api/data` and sync to every device.
-- **Honest about gaps.** When a live source is unreachable the app says "Schedule unavailable" rather than inventing times, phone numbers, or content.
-- **One brand config.** `tailwind.config.ts` holds Royal Blue `#1A4784`, Vegas Gold `#B4A365`, Anthracite `#282828`. No red except destructive states.
+`src/lib/scheduleEngine.ts` takes the time, the bell schedule, and the student's profile, and returns one state: in a period, passing, before school, after school, or no school. It makes no network calls and has no side effects, which is why the countdown survives a dead connection.
+
+The server pulls the staff directory, clubs, athletics, and news from smhs.org, caching each source in memory with single-flight and serving stale copies while it refreshes. A few thousand phones polling every 30 seconds still add up to a handful of requests upstream. Schedule data comes from the school's BellCalSync API when `CALENDAR_API_KEY` is set, and from the public CalendarWiz feed when it isn't.
+
+Admins edit announcements, notices, schedule changes, dining, contacts, prayers, and campus map pins inside the app. Those writes land in `server/.data/data.json`, and devices pick them up from `/api/data` on an ETag-cached poll.
+
+When a source is unreachable the app prints "Schedule unavailable" or "Hours unavailable" and leaves it there. Guessing a bell time or a front-office number would be worse than showing nothing.
 
 ## Privacy
 
-Built for minors and school staff in California, so privacy is architectural rather than a policy page.
+Students don't have accounts. Their profile and settings sit in the browser and never reach the server.
 
-- **No student accounts and no student data on the server.** Profile, schedule, and settings stay on the device.
-- **The server stores school content and staff logins only.** Passwords are salted scrypt digests; session tokens are stored hashed.
-- **No ads, no third-party trackers, no data sold.** Usage metrics are anonymous and aggregate only, with a random device id and never a name, email, or IP, hard-deleted after 30 days.
+The server holds school content and staff logins. Staff passwords are scrypt digests with per-user salts, and session tokens are stored as sha256 hashes rather than in the clear.
 
-Written to satisfy SOPIPA, CCPA/CPRA minor provisions, SB 568, and FERPA minimization. The full plain-English policy is in the app at **More → Privacy**.
+Usage metrics are per-role counts against a random device id, with no name, email, or IP attached. A timer deletes those rows from the database 30 days after collection, so the dashboards can only ever show the last month. Anonymous support tickets stay longer. The app carries no ads and no third-party scripts.
+
+The policy that covers SOPIPA, CCPA/CPRA, SB 568, and FERPA is in the app under **More → Privacy**.
