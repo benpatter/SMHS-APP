@@ -17,7 +17,7 @@ import { Button, Card, Field, SectionTitle, Spinner, TextInput } from './ui';
  */
 /**
  * Who may sign in to the Admin portal. The SERVER enforces the same lists in
- * server/index.mjs (ADMIN_DEPARTMENTS / ADMIN_TITLES) before accepting any
+ * server/index.mjs (ADMIN_DEPARTMENTS / ADMIN_TITLE_PATTERNS) before accepting any
  * write to shared app data — keep the two in step, and change them together.
  */
 export const ADMIN_DEPARTMENTS = [
@@ -28,11 +28,42 @@ export const ADMIN_DEPARTMENTS = [
 ];
 
 /**
- * Directory TITLES that grant Admin portal access on their own, for leaders
- * whose directory department isn't one of the offices above (the Rector).
- * Exact title only — "Rector" qualifies, "Assistant to the Rector" does not.
+ * Directory TITLES that carry Admin portal access on their own: the school's
+ * Administration Board. Their directory departments sit all over campus (Campus
+ * Ministry, Activities, Student Services, Options Program), so the office list
+ * above can never find them — the TITLE is what makes someone an administrator,
+ * and reading it from the live directory means a new Assistant Principal is an
+ * admin the day the school publishes them, with no release and no list of names
+ * to maintain.
+ *
+ * Matched against each comma-separated SEGMENT of the title, so "Assistant
+ * Principal for Mission & Ministry, Director of Campus Ministry" qualifies on
+ * its first segment. Anchored on purpose: "Principal" qualifies, "Administrative
+ * Assistant to the Principal" does not.
  */
-export const ADMIN_TITLES = ['Rector'];
+export const ADMIN_TITLE_PATTERNS: RegExp[] = [
+  /^president$/,
+  /^vice president$/,
+  // The CFO's directory title is "Vice President of Finance"; the spelled-out
+  // and initialled forms are here so a retitling doesn't silently drop access.
+  /^vice president (of|for) [a-z& ]*finance$/,
+  /^cfo$/,
+  /^rector$/,
+  /^principal$/,
+  // Every Assistant Principal, whatever follows ("- Innovation", "of Student
+  // Services", "for Mission & Ministry").
+  /^assistant principal\b/,
+];
+
+/** Does any segment of this directory title carry Admin portal access? */
+export function hasAdminTitle(title: string | undefined): boolean {
+  return (title ?? '')
+    .split(',')
+    .some((segment) => {
+      const t = segment.trim().replace(/\s+/g, ' ').toLowerCase();
+      return ADMIN_TITLE_PATTERNS.some((re) => re.test(t));
+    });
+}
 
 /**
  * May this directory entry use the Admin portal? `granted` is the hand-granted
@@ -42,8 +73,7 @@ export const ADMIN_TITLES = ['Rector'];
 export function isAdminEligible(s: StaffMember, granted?: ReadonlySet<string>): boolean {
   if (s.departments.some((d) => ADMIN_DEPARTMENTS.includes(d))) return true;
   if (granted && s.email && granted.has(s.email)) return true;
-  const title = (s.title ?? '').trim().toLowerCase();
-  return ADMIN_TITLES.some((t) => t.toLowerCase() === title);
+  return hasAdminTitle(s.title);
 }
 
 // ─── ⚠ TEMPORARY TEST ACCOUNTS: DELETE THIS BLOCK BEFORE LAUNCH ⚠ ──────────
@@ -175,6 +205,16 @@ export function PortalGate({
       staff = staff.filter((s) => s.departments.some((d) => restrictDepartments.includes(d)));
     }
     if (staffFilter) staff = staff.filter(staffFilter);
+    // With an eligibility filter and no explicit dropdown, the departments come
+    // from the people who survived it. A fixed office list would have offered
+    // four departments while half the eligible admins (Campus Ministry, Student
+    // Services, Activities…) sat outside all of them, so picking any department
+    // hid the person looking for themselves.
+    if (staffFilter && !restrictDepartments && !departmentOptions) {
+      departments = [...new Set(staff.flatMap((s) => s.departments))].sort((a, b) =>
+        a.localeCompare(b),
+      );
+    }
     if (excludeDepartments) departments = departments.filter((d) => !excludeDepartments.includes(d));
     // ⚠ TEMPORARY: each portal offers ONLY its own test account; the admin
     // portal also offers the real-password email-flow tester. Remove before launch.

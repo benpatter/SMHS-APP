@@ -55,7 +55,7 @@ The app server enforces exactly three tiers, and the MCP tools mirror them:
 |---|---|---|
 | **Public** | students, parents, anonymous — the app has no server-side student/parent auth; their whole capability surface is public reads | all `get_*` / `list_*` tools, `find_period_times` |
 | **Staff session** | signed-in staff (`staff_login`, `set_staff_token`, or an `Authorization: Bearer <token>` header on HTTP requests) | `staff_logout`; a plain teacher session grants nothing more — writes still return 403 |
-| **Admin** | a staff session the **app** recognizes as admin (`ADMIN_EMAILS` env, else membership in Dean's Office / Educational Technology / President's Office / Principal's Office in the scraped directory, the directory title "Rector", or hand-granted access from Administration → Admins) | every `admin_*` tool |
+| **Admin** | a staff session the **app** recognizes as admin (`ADMIN_EMAILS` env, else membership in Dean's Office / Educational Technology / President's Office / Principal's Office in the scraped directory, an administration title in the directory (President, Vice President, Rector, Principal, any Assistant Principal, the CFO), or hand-granted access from Administration → Admins) | every `admin_*` tool |
 
 Gating is fail-closed at three layers: tools refuse locally without a session,
 the app returns 401 for a missing/expired session and 403 for a non-admin one,

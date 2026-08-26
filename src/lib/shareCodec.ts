@@ -3,7 +3,7 @@
  * can compare schedules with NO server, just a QR code or link. Everything is
  * carried in the URL itself; nothing is uploaded anywhere.
  */
-import type { LunchTrack, PersonalSchedule } from './types';
+import type { LunchTrack, PersonalClass, PersonalSchedule } from './types';
 
 export interface SharePayload {
   v: 1;
@@ -47,30 +47,66 @@ export function decodeShare(code: string): SharePayload | null {
   }
 }
 
-export interface ScheduleMatch {
+export interface PeriodComparison {
   periodNumber: number;
-  mine?: string;
-  theirs?: string;
-  sameRoom: boolean;
+  /** The viewer's own entry for this block, if they set one. */
+  mine?: PersonalClass;
+  /** The shared schedule's entry for this block, if they set one. */
+  theirs?: PersonalClass;
+  /** Same section: the two of you are in this class together. */
+  together: boolean;
+  /** Same course, but a teacher or room says it's a different section. */
+  otherSection: boolean;
 }
 
-/** Periods both students have (both non-free). Answers "do we have it together?". */
-export function compareSchedules(
+/** Trimmed, case- and spacing-insensitive, for comparing hand-typed fields. */
+function norm(v: string | undefined): string {
+  return (v ?? '').trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+/**
+ * Line up two schedules block by block.
+ *
+ * "Together" needs two independent signals to agree, because one alone lies:
+ * both being busy in Block 3 says nothing (everyone is), and a matching course
+ * name can still be two different sections of it. So it takes either the same
+ * teacher AND room, or the same course with nothing contradicting it. A course
+ * that matches while the teacher or room disagrees is called out as a different
+ * section instead of being passed off as a class you share.
+ */
+export function comparePeriods(
   mine: PersonalSchedule,
   theirs: PersonalSchedule,
-): ScheduleMatch[] {
-  const matches: ScheduleMatch[] = [];
+): PeriodComparison[] {
+  const rows: PeriodComparison[] = [];
   for (let n = 1; n <= 7; n++) {
     const a = mine[n];
     const b = theirs[n];
-    if (a && b && !a.free && !b.free) {
-      matches.push({
-        periodNumber: n,
-        mine: a.name || `Period ${n}`,
-        theirs: b.name || `Period ${n}`,
-        sameRoom: !!a.room && a.room === b.room,
-      });
-    }
+    // Nothing on either side: no row to show.
+    if (!a && !b) continue;
+
+    const bothInClass = Boolean(a && b && !a.free && !b.free);
+    const sameName = Boolean(norm(a?.name)) && norm(a?.name) === norm(b?.name);
+    const sameRoom = Boolean(norm(a?.room)) && norm(a?.room) === norm(b?.room);
+    const sameTeacher = Boolean(norm(a?.teacher)) && norm(a?.teacher) === norm(b?.teacher);
+    const teachersDiffer =
+      Boolean(norm(a?.teacher)) && Boolean(norm(b?.teacher)) && !sameTeacher;
+    const roomsDiffer = Boolean(norm(a?.room)) && Boolean(norm(b?.room)) && !sameRoom;
+
+    const together =
+      bothInClass && ((sameRoom && sameTeacher) || (sameName && !teachersDiffer && !roomsDiffer));
+    rows.push({
+      periodNumber: n,
+      mine: a,
+      theirs: b,
+      together,
+      otherSection: bothInClass && sameName && !together,
+    });
   }
-  return matches;
+  return rows;
+}
+
+/** How many blocks the two of you are actually in together. */
+export function togetherCount(rows: PeriodComparison[]): number {
+  return rows.filter((r) => r.together).length;
 }

@@ -673,6 +673,8 @@ function calDayToLiveDay(day) {
     periods.push(group ? { ...base, id: `${base.id}-${group}`, group } : base);
   }
   periods.sort((a, b) => a.start.localeCompare(b.start));
+  // Fallback naming only — see scheduleDayNames(). The API sorts every date into
+  // a short enum, so this is a classification, not the school's name for the day.
   const label = day.scheduleType === 'Regular' ? 'Regular Day' : day.scheduleType;
   return {
     label,
@@ -680,6 +682,24 @@ function calDayToLiveDay(day) {
     school: periods.length > 0,
     periods,
   };
+}
+
+/**
+ * The school's OWN name for each date, from its published bell calendar.
+ *
+ * The partner API files every day under one of eight scheduleTypes (Regular,
+ * Mass Day, Meeting Day, …), which is a classification, not a name: an All
+ * Periods Day, a Minimum Day, a Split Mass Day and a Special Schedule Day all
+ * come back as "Regular", and the app showed 71 of this year's 204 school days
+ * under the wrong name. The school's bell calendar carries the real one
+ * ("**All Periods Day 7"), and it covers exactly the same dates.
+ *
+ * So: times and periods from the API, NAMES from the school. Never a name this
+ * app invented — if the calendar can't be reached, the API's classification
+ * stands rather than a guess.
+ */
+function scheduleDayNames() {
+  return cached('bell-day-names', async () => parseSchedule(await fetchText(SOURCES.bell)));
 }
 
 /**
@@ -694,6 +714,22 @@ async function calSchedule() {
   for (const [s, e] of dateWindows(startDate, endDate, 60)) {
     const j = await calApi(`/schedule?start=${s}&end=${e}`);
     for (const day of j.days || []) days[day.date] = calDayToLiveDay(day);
+  }
+
+  // Overlay the school's own day names (see scheduleDayNames). Names only: the
+  // periods, times and lunch tracks stay the API's, which is the richer source.
+  let names = {};
+  try {
+    names = await scheduleDayNames();
+  } catch (err) {
+    console.error('[schedule] day names unavailable, using the API classification:', err.message);
+  }
+  for (const [date, day] of Object.entries(days)) {
+    const named = names[date];
+    if (!named?.label) continue;
+    day.label = named.label;
+    day.short = named.short;
+    if (named.rotationDay) day.rotationDay = named.rotationDay;
   }
   return days;
 }
@@ -1805,19 +1841,43 @@ const ADMIN_DEPARTMENTS = [
 ];
 
 /**
- * Directory TITLES that grant admin access on their own, for school leaders
- * whose directory department isn't one of the offices above (the Rector).
- * Exact title only — "Rector" qualifies, "Assistant to the Rector" does not.
- * MUST stay in step with ADMIN_TITLES in src/components/PortalGate.tsx.
+ * Directory TITLES that carry admin access on their own: the school's
+ * Administration Board. Their directory departments are scattered across campus
+ * (Campus Ministry, Activities, Student Services, Options Program), so the
+ * office list above can never find them — the TITLE is what makes someone an
+ * administrator. Reading it from the live directory means a new Assistant
+ * Principal is an admin the day the school publishes them, with no redeploy and
+ * no hand-maintained list of people.
+ *
+ * Matched against each comma-separated SEGMENT of the title, so "Assistant
+ * Principal for Mission & Ministry, Director of Campus Ministry" qualifies on
+ * its first segment. Anchored on purpose: "Principal" qualifies, "Administrative
+ * Assistant to the Principal" does not.
+ *
+ * MUST stay in step with ADMIN_TITLE_PATTERNS in src/components/PortalGate.tsx.
  */
-const ADMIN_TITLES = ['Rector'];
+const ADMIN_TITLE_PATTERNS = [
+  /^president$/,
+  /^vice president$/,
+  // The CFO's directory title is "Vice President of Finance"; the spelled-out
+  // and initialled forms are here so a retitling doesn't silently drop access.
+  /^vice president (of|for) [a-z& ]*finance$/,
+  /^cfo$/,
+  /^rector$/,
+  /^principal$/,
+  // Every Assistant Principal, whatever follows ("- Innovation", "of Student
+  // Services", "for Mission & Ministry").
+  /^assistant principal\b/,
+];
 
-/** Exact-title match, forgiving only whitespace and case. */
+/** Does any segment of this person's directory title carry admin access? */
 function hasAdminTitle(person) {
-  const title = String(person?.title ?? '')
-    .trim()
-    .toLowerCase();
-  return ADMIN_TITLES.some((t) => t.toLowerCase() === title);
+  return String(person?.title ?? '')
+    .split(',')
+    .some((segment) => {
+      const t = segment.trim().replace(/\s+/g, ' ').toLowerCase();
+      return ADMIN_TITLE_PATTERNS.some((re) => re.test(t));
+    });
 }
 
 /** May this staff member write shared app data? */
@@ -3349,7 +3409,14 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/schedule') {
       if (calConfigured()) {
         const days = await cached('schedule', async () => withScheduleHistory(await calSchedule()));
-        return send(res, 200, { source: 'bellcalsync', count: Object.keys(days).length, days });
+        // Times from the partner API, day names from the school's own bell
+        // calendar (see scheduleDayNames).
+        return send(res, 200, {
+          source: 'bellcalsync',
+          names: 'calendarwiz',
+          count: Object.keys(days).length,
+          days,
+        });
       }
       const days = await cached('schedule', async () =>
         withScheduleHistory(parseSchedule(await fetchText(SOURCES.bell))),
