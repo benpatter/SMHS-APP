@@ -1,29 +1,30 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import QRCode from 'qrcode';
 import { useAppStore } from '@/lib/store';
 import { useMounted } from '@/lib/hooks';
 import {
   encodeShare,
   decodeShare,
-  compareSchedules,
-  type SharePayload,
+  comparePeriods,
+  togetherCount,
+  type PeriodComparison,
 } from '@/lib/shareCodec';
+import type { SharePayload } from '@/lib/shareCodec';
+import { childScheduleLabel, type PersonalClass } from '@/lib/types';
 import { BackLink } from '@/components/BackLink';
 import { Button, Card, EmptyState, Pill } from '@/components/ui';
-import { CheckIcon } from '@/components/icons';
 
 export default function SharePage() {
   const mounted = useMounted();
   const schedule = useAppStore((s) => s.schedule);
   const profile = useAppStore((s) => s.profile);
-  const importSchedule = useAppStore((s) => s.importSchedule);
 
   const [qr, setQr] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [incoming, setIncoming] = useState<SharePayload | null>(null);
-  const [imported, setImported] = useState(false);
 
   const hasClasses = mounted && Object.keys(schedule).length > 0;
 
@@ -56,10 +57,11 @@ export default function SharePage() {
       .catch(() => setQr(''));
   }, [shareUrl]);
 
-  const matches = useMemo(
-    () => (incoming ? compareSchedules(schedule, incoming.schedule) : []),
+  const rows = useMemo(
+    () => (incoming ? comparePeriods(schedule, incoming.schedule) : []),
     [incoming, schedule],
   );
+  const together = togetherCount(rows);
 
   return (
     <div className="space-y-4">
@@ -68,54 +70,44 @@ export default function SharePage() {
         <h1 className="wordmark text-xl text-royal dark:text-[var(--text)]">Share My Schedule</h1>
       </div>
 
-      {/* Incoming shared schedule (someone opened your link / you opened theirs). */}
+      {/* A friend's schedule, opened from their link or QR. READ-ONLY: this
+          view never touches the viewer's own schedule. It used to offer to
+          import theirs over yours, which is the opposite of what anyone opening
+          a friend's link wants. */}
       {incoming && (
-        <Card className="space-y-3 p-4">
-          <div className="flex items-center gap-2">
-            <Pill tone="gold">Shared schedule</Pill>
-            {incoming.name && <span className="text-sm font-semibold text-[var(--text)]">{incoming.name}</span>}
+        <Card className="overflow-hidden">
+          <div className="flex items-center justify-between gap-2 bg-royal/5 px-4 py-2.5 dark:bg-white/5">
+            <span className="min-w-0 truncate font-semibold text-[var(--text)]">
+              {incoming.name ? childScheduleLabel(incoming.name) : 'Shared Schedule'}
+            </span>
+            {hasClasses && (
+              <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-gold-deep dark:text-gold">
+                {together === 0
+                  ? 'No classes together'
+                  : `${together} class${together === 1 ? '' : 'es'} together`}
+              </span>
+            )}
           </div>
 
-          {hasClasses ? (
-            matches.length > 0 ? (
-              <div>
-                <p className="text-sm font-semibold text-[var(--text)]">Classes you share:</p>
-                <ul className="mt-2 space-y-1.5">
-                  {matches.map((m) => (
-                    <li key={m.periodNumber} className="flex items-center gap-2 text-sm">
-                      <CheckIcon className="h-4 w-4 text-royal dark:text-gold" />
-                      <span className="text-[var(--text)]">
-                        Period {m.periodNumber}: {m.mine}
-                        {m.sameRoom && ' · same room'}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <p className="text-sm text-[var(--muted)]">No periods in common with your schedule.</p>
-            )
-          ) : (
-            <p className="text-sm text-[var(--muted)]">
-              Add your own classes to compare, or import this one as your schedule.
+          {rows.length === 0 ? (
+            <p className="p-4 text-sm text-[var(--muted)]">
+              This link doesn&apos;t carry any classes.
             </p>
+          ) : (
+            <div className="divide-y divide-[var(--divider)]">
+              {rows.map((row) => (
+                <PeriodRow key={row.periodNumber} row={row} showMine={hasClasses} />
+              ))}
+            </div>
           )}
 
-          {!imported ? (
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                importSchedule(incoming.schedule);
-                setImported(true);
-              }}
+          {!hasClasses && (
+            <Link
+              href="/more/schedule/"
+              className="flex items-center gap-2 border-t border-[var(--divider)] px-4 py-3 text-sm font-semibold text-royal transition-colors hover:bg-black/[0.02] dark:text-gold dark:hover:bg-white/[0.02]"
             >
-              Import as my schedule
-            </Button>
-          ) : (
-            <p className="flex items-center justify-center gap-1 text-sm font-semibold text-royal dark:text-gold">
-              <CheckIcon className="h-4 w-4" /> Imported
-            </p>
+              Add your classes to see which ones you share →
+            </Link>
           )}
         </Card>
       )}
@@ -155,6 +147,57 @@ export default function SharePage() {
           </Button>
         </Card>
       )}
+    </div>
+  );
+}
+
+/** "AP Biology" / "Free" / "—" for one side of a block. */
+function classLabel(c: PersonalClass | undefined, periodNumber: number): string {
+  if (!c) return '—';
+  if (c.free) return 'Free';
+  return c.name?.trim() || `Period ${periodNumber}`;
+}
+
+/** The teacher/room line under a class, when either was filled in. */
+function classDetail(c: PersonalClass | undefined): string {
+  if (!c || c.free) return '';
+  return [c.teacher?.trim(), c.room?.trim()].filter(Boolean).join(' · ');
+}
+
+/**
+ * One block: their class, and yours beside it. Their side leads — the point of
+ * opening someone's link is to read THEIR day — with the match called out only
+ * when the two entries actually agree (see comparePeriods).
+ */
+function PeriodRow({ row, showMine }: { row: PeriodComparison; showMine: boolean }) {
+  const detail = classDetail(row.theirs);
+  return (
+    <div className="flex gap-3 px-4 py-3">
+      <span className="w-7 shrink-0 pt-0.5 text-xs font-bold text-[var(--muted)]">
+        P{row.periodNumber}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <span className="min-w-0 font-semibold text-[var(--text)]">
+            {classLabel(row.theirs, row.periodNumber)}
+          </span>
+          {row.together ? (
+            <Pill tone="gold" className="shrink-0">
+              Together
+            </Pill>
+          ) : row.otherSection ? (
+            <Pill tone="muted" className="shrink-0">
+              Other section
+            </Pill>
+          ) : null}
+        </div>
+        {detail && <p className="mt-0.5 text-xs text-[var(--muted)]">{detail}</p>}
+        {showMine && (
+          <p className="mt-1 text-xs text-[var(--muted)]">
+            You: {classLabel(row.mine, row.periodNumber)}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
