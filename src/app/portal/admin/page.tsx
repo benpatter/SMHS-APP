@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { PortalGate, ADMIN_DEPARTMENTS, isAdminEligible } from '@/components/PortalGate';
+import { PortalGate, isAdminEligible } from '@/components/PortalGate';
 import { QuickActions } from '@/components/QuickActions';
 import { SectionTitle } from '@/components/ui';
 import { useAdminGrants } from '@/lib/providers/adminGrants';
@@ -10,10 +10,12 @@ import type { StaffMember } from '@/lib/providers/staff';
 /**
  * The Admin portal home: same glanceable day view and quick actions as the
  * student home. Admin tools live behind the Admin tab in the bottom nav.
- * Access is limited to the Dean's Office, Educational Technology,
- * President's Office, and Principal's Office — plus school leaders granted
- * access by directory title (the Rector), plus anyone granted access by hand
- * from Administration → Admins. See isAdminEligible.
+ * Access goes to the Dean's Office, Educational Technology, President's Office
+ * and Principal's Office, to the administration by directory title (President,
+ * Vice President, Rector, Principal, every Assistant Principal, the CFO), and to
+ * anyone granted access by hand from Administration → Admins. See
+ * isAdminEligible — the department dropdown builds itself from whoever that
+ * lets in.
  */
 export default function AdminPortalPage() {
   const grants = useAdminGrants();
@@ -22,9 +24,8 @@ export default function AdminPortalPage() {
     <PortalGate
       role="admin"
       title="Admin Portal"
-      subtitle="For the Rector and the Dean's, Ed Tech, President's, and Principal's offices."
+      subtitle="For the school's administration and the Dean's, Ed Tech, President's, and Principal's offices."
       staffFilter={staffFilter}
-      departmentOptions={ADMIN_DEPARTMENTS}
       dayGlance
     >
       <section>

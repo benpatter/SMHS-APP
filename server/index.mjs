@@ -1841,19 +1841,44 @@ const ADMIN_DEPARTMENTS = [
 ];
 
 /**
- * Directory TITLES that grant admin access on their own, for school leaders
- * whose directory department isn't one of the offices above (the Rector).
- * Exact title only — "Rector" qualifies, "Assistant to the Rector" does not.
- * MUST stay in step with ADMIN_TITLES in src/components/PortalGate.tsx.
+ * Directory TITLES that carry admin access on their own: the school's
+ * Administration Board. Their directory departments are scattered across campus
+ * (Campus Ministry, Activities, Student Services, Options Program), so the
+ * office list above can never find them — the TITLE is what makes someone an
+ * administrator. Reading it from the live directory means a new Assistant
+ * Principal is an admin the day the school publishes them, with no redeploy and
+ * no hand-maintained list of people.
+ *
+ * Matched against each comma-separated SEGMENT of the title, so "Assistant
+ * Principal for Mission & Ministry, Director of Campus Ministry" qualifies on
+ * its first segment. Anchored on purpose: "Principal" qualifies, "Administrative
+ * Assistant to the Principal" does not.
+ *
+ * MUST stay in step with ADMIN_TITLE_PATTERNS in src/components/PortalGate.tsx.
  */
-const ADMIN_TITLES = ['Rector'];
+const ADMIN_TITLE_PATTERNS = [
+  /^president$/,
+  /^vice president$/,
+  // The CFO's directory title is "Vice President of Finance"; the spelled-out
+  // and initialled forms are here so a retitling doesn't silently drop access.
+  /^vice president (of|for) [a-z& ]*finance$/,
+  /^cfo$/,
+  /^chief [a-z& ]+ officer$/,
+  /^rector$/,
+  /^principal$/,
+  // Every Assistant Principal, whatever follows ("- Innovation", "of Student
+  // Services", "for Mission & Ministry").
+  /^assistant principal\b/,
+];
 
-/** Exact-title match, forgiving only whitespace and case. */
+/** Does any segment of this person's directory title carry admin access? */
 function hasAdminTitle(person) {
-  const title = String(person?.title ?? '')
-    .trim()
-    .toLowerCase();
-  return ADMIN_TITLES.some((t) => t.toLowerCase() === title);
+  return String(person?.title ?? '')
+    .split(',')
+    .some((segment) => {
+      const t = segment.trim().replace(/\s+/g, ' ').toLowerCase();
+      return ADMIN_TITLE_PATTERNS.some((re) => re.test(t));
+    });
 }
 
 /** May this staff member write shared app data? */
