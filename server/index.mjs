@@ -1863,7 +1863,6 @@ const ADMIN_TITLE_PATTERNS = [
   // and initialled forms are here so a retitling doesn't silently drop access.
   /^vice president (of|for) [a-z& ]*finance$/,
   /^cfo$/,
-  /^chief [a-z& ]+ officer$/,
   /^rector$/,
   /^principal$/,
   // Every Assistant Principal, whatever follows ("- Innovation", "of Student
