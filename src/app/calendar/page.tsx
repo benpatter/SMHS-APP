@@ -6,9 +6,9 @@ import { PullToRefresh } from '@/components/PullToRefresh';
 import { DayTypeStrip } from '@/components/DayTypeStrip';
 import { DayStepper } from '@/components/DayStepper';
 import { Card, EmptyState, Pill, SectionTitle, Spinner } from '@/components/ui';
-import { useMounted } from '@/lib/hooks';
-import { nowInSchoolTz, DateTime } from '@/lib/time';
-import { allEvents, eventsFor, upcomingEvents } from '@/lib/calendar';
+import { useMounted, useNow } from '@/lib/hooks';
+import { DateTime } from '@/lib/time';
+import { allEvents, eventsFor, focusDay, upcomingEvents } from '@/lib/calendar';
 import { fetchLiveEvents } from '@/lib/providers/live';
 import { applyAthleticsEdits, useAppStore } from '@/lib/store';
 import type { SchoolEvent } from '@/config/calendar';
@@ -63,16 +63,34 @@ function EventRow({ e }: { e: SchoolEvent }) {
 
 export default function CalendarPage() {
   const mounted = useMounted();
-  const [selected, setSelected] = useState<DateTime>(() => nowInSchoolTz().startOf('day'));
-  const iso = selected.toFormat('yyyy-MM-dd');
-  const today = nowInSchoolTz().startOf('day');
+  const now = useNow(60_000);
+  const today = now.startOf('day');
   // Subscribe to the admin overlay + live schedule so events/day-types reflect instantly.
   const admin = useAppStore((s) => s.admin);
   const serverData = useAppStore((s) => s.serverData);
   // Re-render the grid (no-school dimming) once the live schedule loads, and
   // when an admin day edit lands from the server.
-  useAppStore((s) => s.liveScheduleLoaded);
-  useAppStore((s) => s.serverData);
+  const liveScheduleLoaded = useAppStore((s) => s.liveScheduleLoaded);
+  const live = useAppStore((s) => s.liveSchedule);
+
+  /**
+   * Which day the calendar opens on. Null means "whatever day matters right
+   * now" — today during the school day, the next school day after 5pm — so an
+   * evening visit lands on tomorrow without the student stepping to it. It also
+   * keeps following that rule as the live calendar loads and as 5pm passes,
+   * right up until the student picks a day themselves; from then on the
+   * calendar stays exactly where they put it.
+   */
+  const [picked, setPicked] = useState<DateTime | null>(null);
+  const focus = useMemo(
+    () => focusDay(now),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [now, live, liveScheduleLoaded, serverData],
+  );
+  const selected = picked ?? focus.date;
+  /** Picking any day pins the calendar there and ends the auto-follow above. */
+  const setSelected = setPicked;
+  const iso = selected.toFormat('yyyy-MM-dd');
 
   // Real events from the school's Master Calendar (via the live proxy).
   // Three states, never one: loading, live, or unreachable — an empty list only

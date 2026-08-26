@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo } from 'react';
 import { useAppStore } from '@/lib/store';
-import { useMounted } from '@/lib/hooks';
+import { useMounted, useNow } from '@/lib/hooks';
+import { focusDay } from '@/lib/calendar';
 import { PortalGate } from '@/components/PortalGate';
 import { BellScheduleView } from '@/components/BellScheduleView';
 import { QuickActions } from '@/components/QuickActions';
@@ -10,8 +12,8 @@ import { Card, SectionTitle } from '@/components/ui';
 import { ChevronRight, PlusIcon } from '@/components/icons';
 
 /**
- * The Teacher portal home: the same glanceable day view, today's schedule, and
- * quick actions as the student home. Teachers add the classes they teach to
+ * The Teacher portal home: the same glanceable day view, day-ahead schedule,
+ * and quick actions as the student home. Teachers add the classes they teach to
  * make the countdown and bell schedule personal (More → My Schedule).
  */
 export default function TeacherPortalPage() {
@@ -34,14 +36,19 @@ export default function TeacherPortalPage() {
 /** Mirrors the student home's schedule section, with a teacher-flavored nudge. */
 function TeacherSchedule() {
   const mounted = useMounted();
+  const now = useNow(60_000);
   const schedule = useAppStore((s) => s.schedule);
   const hasClasses = mounted && Object.keys(schedule).length > 0;
+  // Same rule as the student home: today until 5pm, then the day ahead.
+  const live = useAppStore((s) => s.liveSchedule);
+  const serverData = useAppStore((s) => s.serverData);
+  const focus = useMemo(() => focusDay(now), [now, live, serverData]);
 
   return (
     <>
       <section>
         <div className="mb-2 flex items-center justify-between">
-          <SectionTitle>Today&apos;s Schedule</SectionTitle>
+          <SectionTitle>{focus.isToday ? "Today's Schedule" : 'Schedule'}</SectionTitle>
           <Link
             href="/calendar/"
             className="tap-expand text-xs font-semibold text-royal dark:text-gold"
@@ -49,7 +56,7 @@ function TeacherSchedule() {
             Full calendar →
           </Link>
         </div>
-        <BellScheduleView compact />
+        <BellScheduleView compact date={focus.isToday ? undefined : focus.date} />
       </section>
 
       {mounted && !hasClasses && (

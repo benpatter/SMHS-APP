@@ -16,7 +16,7 @@ import { gradesLabel } from '@/config/bellSchedules';
 import { lunchLabel } from '@/config/buildings';
 import { gradeFromGradYear } from '@/lib/types';
 import { currentSchoolYearStart } from '@/lib/schoolYear';
-import { formatClock } from '@/lib/time';
+import { formatClock, relativeDayName } from '@/lib/time';
 import { DateTime } from '@/lib/time';
 import { Card, Pill, cx } from './ui';
 
@@ -75,6 +75,19 @@ export function BellScheduleView({
 
   const isLive = (p: PeriodView) => isToday && liveNow >= p.start && liveNow < p.end;
 
+  /**
+   * Which day this card is showing, in SM gold, whenever that isn't today — the
+   * home screen swaps to the day ahead after 5pm, and the calendar shows any
+   * date at all. Nothing marks today: an unmarked card always means right now.
+   * It sits where the day-type pill used to; the pill only ever restated the
+   * day-type name printed beside it.
+   */
+  const dayMarker = isToday ? null : (
+    <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-gold-deep dark:text-gold">
+      {relativeDayName(now, liveNow)}&apos;s Schedule
+    </span>
+  );
+
   if (periods.length === 0) {
     return (
       <Card
@@ -83,7 +96,8 @@ export function BellScheduleView({
           className,
         )}
       >
-        <p className="font-semibold text-[var(--text)]">{sched.name}</p>
+        {dayMarker}
+        <p className={cx('font-semibold text-[var(--text)]', dayMarker && 'mt-1')}>{sched.name}</p>
         <p className="mt-1">{sched.description}</p>
       </Card>
     );
@@ -92,8 +106,8 @@ export function BellScheduleView({
   return (
     <Card className={cx('divide-y divide-[var(--divider)] overflow-hidden', className)}>
       <div className="flex items-center justify-between bg-royal/5 px-4 py-2.5 dark:bg-white/5">
-        <span className="font-semibold text-[var(--text)]">{sched.name}</span>
-        <Pill tone="royal">{sched.short}</Pill>
+        <span className="min-w-0 truncate font-semibold text-[var(--text)]">{sched.name}</span>
+        {dayMarker}
       </div>
       {/* Only when the student genuinely has two options. If their grade leaves
           them one lunch, `split` is null and asking them to set a building to
@@ -102,10 +116,16 @@ export function BellScheduleView({
         (lunchInfo.track || split) &&
         (lunchInfo.track ? (
           <div className="flex items-center gap-3 bg-gold/10 px-4 py-3">
-            <span className="text-sm text-[var(--muted)]">Today&apos;s lunch</span>
+            {/* Named for the day on screen: this card also renders tomorrow on
+                the home screen after 5pm, and any date on the calendar. */}
+            <span className="text-sm text-[var(--muted)]">
+              {isToday ? "Today's lunch" : `${relativeDayName(now, liveNow)}'s lunch`}
+            </span>
             <Pill tone="gold">{lunchLabel(lunchInfo.track)}</Pill>
             {lunchInfo.by === 'grade' && (
-              <span className="text-xs text-[var(--muted)]">by class year today</span>
+              <span className="text-xs text-[var(--muted)]">
+                by class year {isToday ? 'today' : 'that day'}
+              </span>
             )}
           </div>
         ) : (

@@ -144,6 +144,30 @@ export function nextSchoolDay(from: DateTime, lookahead = 21): DateTime | null {
   return null;
 }
 
+/**
+ * The hour (school time) after which the app stops talking about today and
+ * starts talking about the next school day. School lets out between 1:35 and
+ * 2:30, so by 5pm "today's schedule" is a spent answer: what a student wants to
+ * know that evening is what tomorrow looks like.
+ */
+export const LOOKAHEAD_HOUR = 17;
+
+/**
+ * The day the app should be showing right now: today until 5pm, then the next
+ * school day. That's tomorrow on a normal weeknight, and Monday on a Friday
+ * evening, which is the answer someone opening the app on Friday night wants.
+ *
+ * The lookahead stops at a week so a long break can't hijack the home screen
+ * with a day nobody is thinking about yet; past that it just rolls to tomorrow
+ * and shows it honestly as no school. Before the live calendar has loaded
+ * nothing is a school day, so that same fallback applies.
+ */
+export function focusDay(now: DateTime): { date: DateTime; isToday: boolean } {
+  const today = now.startOf('day');
+  if (now.hour < LOOKAHEAD_HOUR) return { date: today, isToday: true };
+  return { date: nextSchoolDay(today, 7) ?? today.plus({ days: 1 }), isToday: false };
+}
+
 /** N upcoming days (including today) with their short label + school flag. */
 export function dayTypeStrip(
   from: DateTime,

@@ -3,12 +3,17 @@
 import { useAppStore, useViewerGradYear } from '@/lib/store';
 import { useNow } from '@/lib/hooks';
 import { computeState } from '@/lib/scheduleEngine';
-import { isSchoolDay, nextSchoolDay } from '@/lib/calendar';
-import { formatClock, formatCountdown, formatDayLabel } from '@/lib/time';
+import { focusDay, isSchoolDay, nextSchoolDay, scheduleFor } from '@/lib/calendar';
+import { formatClock, formatCountdown, formatDayLabel, relativeDayName } from '@/lib/time';
 import { gradeFromGradYear } from '@/lib/types';
 import { currentSchoolYearStart } from '@/lib/schoolYear';
 import { Pill } from './ui';
 import { PinIcon } from './icons';
+
+/** "a" or "an" for the day-type tag that follows it ("an ALL PERIODS day"). */
+function article(short: string): string {
+  return /^[aeiou]/i.test(short.trim()) ? 'an' : 'a';
+}
 
 /**
  * The hero. Answers "how much longer?" in one glance, from across a hallway.
@@ -51,6 +56,14 @@ export function Countdown() {
   }
 
   const next = nextSchoolDay(now);
+  // After 5pm today's day type is spent, so the tag speaks for the day ahead
+  // instead: "Tomorrow is a REGULAR day", or "Monday is an ALL PERIODS day" on a
+  // Friday evening. Same focusDay rule the schedule card follows, so the two
+  // never disagree. Falls back to today's plain tag when there's no school day
+  // close enough to name (summer, a long break).
+  const ahead = focusDay(now);
+  const aheadShort =
+    !ahead.isToday && isSchoolDay(ahead.date) ? scheduleFor(ahead.date).short : null;
   // School IS on, but every period today is limited to other grades (a retreat,
   // a grade-level testing day). Saying "No school today" there is simply wrong.
   const nothingForThisGrade = status === 'no-school' && isSchoolDay(now);
@@ -62,8 +75,16 @@ export function Countdown() {
       aria-label="Current period countdown"
     >
       {/* Day type, always visible without a tap. */}
-      <div className="relative mb-3 flex items-center justify-between">
-        <Pill tone="on-royal">{state.schedule.short}</Pill>
+      <div className="relative mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+        {aheadShort ? (
+          <span className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-white/70">
+            {relativeDayName(ahead.date, now)} is {article(aheadShort)}
+            <Pill tone="on-royal">{aheadShort}</Pill>
+            day
+          </span>
+        ) : (
+          <Pill tone="on-royal">{state.schedule.short}</Pill>
+        )}
         <span className="text-xs font-medium text-white/70">{formatDayLabel(now)}</span>
       </div>
 

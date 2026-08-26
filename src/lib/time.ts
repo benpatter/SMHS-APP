@@ -62,6 +62,18 @@ export function formatDayLabel(dt: DateTime): string {
   return dt.toFormat('ccc, LLL d');
 }
 
+/**
+ * "Today" / "Tomorrow" / "Yesterday" for a date near today, else its weekday
+ * ("Monday"). Every caller appends a possessive 's, and all four forms take one.
+ */
+export function relativeDayName(date: DateTime, today: DateTime): string {
+  const days = Math.round(date.startOf('day').diff(today.startOf('day'), 'days').days);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Tomorrow';
+  if (days === -1) return 'Yesterday';
+  return date.toFormat('cccc');
+}
+
 /** "3h ago", "Yesterday", "Jun 18", relative to now in school tz. */
 export function formatRelative(iso: string): string {
   const then = DateTime.fromISO(iso, { zone: TIMEZONE });
