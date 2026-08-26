@@ -114,6 +114,42 @@ export function dayShortFor(dt: DateTime): string {
   return '—';
 }
 
+/**
+ * Day-type shorts squeezed down to something that fits a month-grid cell.
+ * First match wins, so the more specific rows sit above the general ones
+ * ("Split Mass" before "Mass").
+ */
+const DAY_ABBR: [RegExp, string][] = [
+  [/assembl/i, 'Assem'], // "Split Assembly" is an assembly day, not a Mass day
+  [/split/i, 'Split'],
+  [/mass|liturg/i, 'Mass'],
+  [/meet/i, 'Mtg'],
+  [/minim/i, 'Min'],
+  [/rally/i, 'Rally'],
+  [/exam|final/i, 'Exam'],
+  [/test/i, 'Test'],
+  [/all\s*period/i, 'All'],
+  [/regular/i, 'Reg'],
+  [/late/i, 'Late'],
+  [/retreat/i, 'Retr'],
+  [/special/i, 'Spec'],
+];
+
+/**
+ * Two-to-five letter tag for a school day ("Reg", "Mass", "Min") — the month
+ * grid prints it under the day number. A non-school day returns an empty
+ * string: a day off is shown by having nothing to show, and an unknown day
+ * (live calendar not loaded yet) says nothing rather than guessing.
+ */
+export function dayAbbrFor(dt: DateTime): string {
+  if (!isSchoolDay(dt)) return '';
+  const short = dayShortFor(dt);
+  for (const [re, abbr] of DAY_ABBR) if (re.test(short)) return abbr;
+  // Unrecognized day type: first word, clipped so it can't blow out the cell.
+  const word = short.split(/\s+/)[0] ?? '';
+  return word.length > 5 ? word.slice(0, 4) : word;
+}
+
 /** Seed events plus admin-authored events (server-owned), minus hidden ones. */
 export function allEvents(): SchoolEvent[] {
   const server = useAppStore.getState().serverData?.events ?? [];

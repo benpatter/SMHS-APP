@@ -9,8 +9,15 @@ const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 /**
  * Month-grid date picker. Tap any day to jump the calendar there; arrows page
- * whole months ahead/back. Highlights today + the selected day, dims no-school
- * days, and dots days that have events.
+ * whole months ahead/back. Highlights today + the selected day, and marks each
+ * day of the month with what a student actually wants off a month view:
+ *
+ *   - a school day carries its day-type tag ("Reg", "Mass", "Min"),
+ *   - a day with something on the calendar carries a blue dot beside it,
+ *   - a day off carries nothing at all — the blank IS the information.
+ *
+ * Days from the neighbouring months are left unmarked; they're only there to
+ * square off the grid.
  */
 export function MonthGrid({
   selected,
@@ -18,12 +25,16 @@ export function MonthGrid({
   onSelect,
   eventDates,
   isSchoolDay,
+  dayTag,
 }: {
   selected: DateTime;
   today: DateTime;
   onSelect: (d: DateTime) => void;
+  /** Days that get the blue dot. */
   eventDates: Set<string>;
   isSchoolDay: (d: DateTime) => boolean;
+  /** Day-type tag for a school day. `abbr` is empty on a day off. */
+  dayTag: (d: DateTime) => { abbr: string; label: string };
 }) {
   const [viewMonth, setViewMonth] = useState<DateTime>(() => selected.startOf('month'));
 
@@ -74,12 +85,19 @@ export function MonthGrid({
           const isToday = iso === todayIso;
           const isSel = iso === selIso;
           const off = inMonth && !isSchoolDay(d);
-          const hasEvent = eventDates.has(iso);
+          const tag = inMonth ? dayTag(d) : { abbr: '', label: '' };
+          const hasEvent = inMonth && eventDates.has(iso);
           return (
             <button
               key={iso}
               onClick={() => onSelect(d.startOf('day'))}
-              aria-label={d.toFormat('cccc, LLLL d')}
+              aria-label={[
+                d.toFormat('cccc, LLLL d'),
+                tag.abbr && tag.label,
+                hasEvent && 'has events',
+              ]
+                .filter(Boolean)
+                .join(', ')}
               aria-current={isSel ? 'date' : undefined}
               className={cx(
                 'tap relative flex aspect-square flex-col items-center justify-center rounded-card text-sm transition-colors',
@@ -93,15 +111,35 @@ export function MonthGrid({
                 !isSel && inMonth && !off && 'text-[var(--text)]',
               )}
             >
-              {d.day}
-              {hasEvent && (
-                <span
-                  className={cx(
-                    'absolute bottom-1 h-1 w-1 rounded-full',
-                    isSel ? 'bg-white' : 'bg-gold',
-                  )}
-                />
-              )}
+              <span className="leading-none">{d.day}</span>
+              {/* Marker row. Always present, even when empty, so every number in
+                  the grid sits on the same line instead of hopping around. */}
+              <span className="mt-1 flex h-2.5 max-w-full items-center gap-0.5 overflow-hidden leading-none">
+                {/* On a tagged day the dot keeps its slot either way, so the
+                    tags stay in one column down the week instead of sliding
+                    sideways as events come and go. A day with only a dot
+                    centers it under the number. */}
+                {(hasEvent || tag.abbr) && (
+                  <span
+                    className={cx(
+                      'h-1 w-1 shrink-0 rounded-full',
+                      !hasEvent ? 'bg-transparent' : isSel ? 'bg-white' : 'bg-brand',
+                    )}
+                  />
+                )}
+                {tag.abbr && (
+                  <span
+                    className={cx(
+                      'truncate text-[9px] font-semibold uppercase tracking-tight',
+                      // Same small-gold pair the bell schedule uses: the deep
+                      // gold holds contrast on white, the brand gold on dark.
+                      isSel ? 'text-gold-soft' : 'text-gold-deep dark:text-gold',
+                    )}
+                  >
+                    {tag.abbr}
+                  </span>
+                )}
+              </span>
             </button>
           );
         })}

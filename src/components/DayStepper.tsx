@@ -5,7 +5,13 @@ import { MonthGrid } from '@/components/MonthGrid';
 import { Card } from '@/components/ui';
 import { CalendarIcon, ChevronRight, XIcon } from '@/components/icons';
 import { DateTime, formatDayLabel } from '@/lib/time';
-import { isSchoolDay } from '@/lib/calendar';
+import { dayAbbrFor, dayShortFor, isSchoolDay } from '@/lib/calendar';
+
+/** What the month grid marks a day with: its day-type tag, plus the full short
+ *  label behind it for screen readers. */
+function dayTag(d: DateTime) {
+  return { abbr: dayAbbrFor(d), label: dayShortFor(d) };
+}
 
 /**
  * Selected day + fine day-stepping, with the month picker behind the date.
@@ -21,7 +27,8 @@ export function DayStepper({
   selected: DateTime;
   today: DateTime;
   onSelect: (d: DateTime) => void;
-  /** Days to dot in the month grid. */
+  /** Days that get the blue dot in the month grid: days with events on the
+   *  student calendar, days with a saved schedule in the admin editor. */
   eventDates: Set<string>;
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -90,6 +97,7 @@ export function DayStepper({
               }}
               eventDates={eventDates}
               isSchoolDay={isSchoolDay}
+              dayTag={dayTag}
             />
           </div>
         </div>
