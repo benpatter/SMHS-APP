@@ -10,7 +10,7 @@
  */
 // Bump this on every deploy that must reach phones immediately: activate()
 // deletes any cache whose name differs, flushing stale pages.
-const CACHE = 'smchs-shell-v21';
+const CACHE = 'smchs-shell-v22';
 const PRECACHE = ['/', '/manifest.webmanifest', '/logos/sm-logo.svg', '/icons/icon.svg', '/icons/icon-192.png'];
 
 self.addEventListener('install', (event) => {
