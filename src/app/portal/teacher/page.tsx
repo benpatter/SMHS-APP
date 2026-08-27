@@ -20,7 +20,7 @@ export default function TeacherPortalPage() {
   return (
     <PortalGate
       role="teacher"
-      title="Teacher Portal"
+      title="Faculty & Staff Portal"
       subtitle="Sign in from any department."
       dayGlance
     >

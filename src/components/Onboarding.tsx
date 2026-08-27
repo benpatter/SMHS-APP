@@ -10,7 +10,7 @@ import { login } from '@/lib/portalAuth';
 import { PASSWORDLESS_TEST_EMAILS } from './PortalGate';
 import { BrandMark } from './BrandMark';
 import { GradIcon, ShieldIcon, UsersIcon, ChevronRight } from './icons';
-import { Button, Card, Field, TextInput, cx } from './ui';
+import { Button, Card, Field, Spinner, TextInput, cx } from './ui';
 
 type Step = 'who' | 'student-confirm' | 'student-form' | 'staff-confirm' | 'staff-password';
 
@@ -23,7 +23,15 @@ type Step = 'who' | 'student-confirm' | 'student-form' | 'staff-confirm' | 'staf
  * so the app boots straight to the right home next time. If someone signed in
  * on this device before, their re-login is one tap ("Are you {name}?").
  */
-export function Onboarding() {
+export function Onboarding({
+  leaving,
+  onLeave,
+}: {
+  /** A destination is in flight: hold the screen instead of the question. */
+  leaving: boolean;
+  /** Tell the shell where this screen is headed, so it can hold it there. */
+  onLeave: (path: string) => void;
+}) {
   const router = useRouter();
   const signInStudent = useAppStore((s) => s.signInStudent);
   const signInStaff = useAppStore((s) => s.signInStaff);
@@ -47,25 +55,34 @@ export function Onboarding() {
   const emailOk = isStudentEmail(email);
   const canContinue = name.trim().length > 0 && emailOk && gradYear !== null;
 
+  // Every choice here records itself and then LEAVES for another route. The
+  // record has to land first — it's what makes the choice survive a reload —
+  // but writing it also unmounts this overlay (AppShell shows it while the role
+  // is null), which used to uncover home for the whole length of the
+  // navigation. `onLeave` keeps the overlay up, on a spinner, until the
+  // destination is actually on screen.
+  const leave = (path: string, choose: () => void) => {
+    choose();
+    onLeave(path);
+    router.replace(path);
+  };
+
   const finishStudent = (n: string, e: string, y: number | null) => {
-    signInStudent(n, e, y);
-    router.replace('/');
+    leave('/', () => signInStudent(n, e, y));
   };
 
   const goStaffPortals = () => {
-    chooseStaff();
-    router.replace('/portal/');
+    leave('/portal/', chooseStaff);
   };
 
   const goParentHub = () => {
-    chooseParent();
-    router.replace('/parent/');
+    leave('/parent/', chooseParent);
   };
 
   const finishStaff = () => {
     if (!rememberedStaff) return;
-    signInStaff(rememberedStaff);
-    router.replace(`/portal/${rememberedStaff.portal}/`);
+    const staff = rememberedStaff;
+    leave(`/portal/${staff.portal}/`, () => signInStaff(staff));
   };
 
   // "Yes, that's me" still verifies the account's password. Remembering a
@@ -138,8 +155,8 @@ export function Onboarding() {
               <ShieldIcon className="h-8 w-8" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-xl font-bold text-[var(--text)]">Staff</span>
-              <span className="block text-sm text-[var(--muted)]">Admin and faculty portals</span>
+              <span className="block text-xl font-bold text-[var(--text)]">SMCHS T.E.A.M. Member</span>
+              <span className="block text-sm text-[var(--muted)]">Admin, Faculty &amp; Staff</span>
             </span>
             <ChevronRight className="h-6 w-6 text-[var(--muted)]" />
           </Card>
@@ -327,11 +344,19 @@ export function Onboarding() {
             </p>
           </div>
 
-          {step === 'who' && whoStep}
-          {step === 'student-confirm' && studentConfirmStep}
-          {step === 'staff-confirm' && staffConfirmStep}
-          {step === 'staff-password' && staffPasswordStep}
-          {step === 'student-form' && studentFormStep}
+          {leaving ? (
+            <div className="mt-8">
+              <Spinner />
+            </div>
+          ) : (
+            <>
+              {step === 'who' && whoStep}
+              {step === 'student-confirm' && studentConfirmStep}
+              {step === 'staff-confirm' && staffConfirmStep}
+              {step === 'staff-password' && staffPasswordStep}
+              {step === 'student-form' && studentFormStep}
+            </>
+          )}
         </div>
       </div>
     </div>
