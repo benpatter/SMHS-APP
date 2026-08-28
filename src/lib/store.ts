@@ -1362,11 +1362,19 @@ export const useAppStore = create<AppState>()(
           state.staffSessionExpired = false;
         } else if (state.userRole === 'staff') {
           // 'staff' with no profile is a half-finished welcome-screen choice:
-          // someone tapped "Staff", never signed in, and closed the app. Left
-          // as-is it suppresses onboarding (and once booted to the portal
-          // chooser on every launch). Nobody is signed in here — forget the
-          // choice so the device opens on home with the welcome screen.
-          state.userRole = null;
+          // someone tapped the T.E.A.M. Member card, never signed in, and closed
+          // the app. Left as-is it suppresses onboarding (and once booted to the
+          // portal chooser on every launch). Nobody is signed in here — forget
+          // the choice so the device opens on home with the welcome screen.
+          //
+          // Unless the portal is what's on screen: a reload there (an app
+          // update, a swipe-refresh, a browser that reloads instead of routing)
+          // is the middle of that very choice, and forgetting it puts the
+          // welcome screen back on top of the portal they just opened — which
+          // reads as being bounced back for no reason.
+          const onPortal =
+            typeof window !== 'undefined' && window.location.pathname.startsWith('/portal');
+          if (!onPortal) state.userRole = null;
         }
       },
     },

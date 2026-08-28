@@ -3194,10 +3194,10 @@ const MIME = {
   '.pdf': 'application/pdf',
 };
 
-function serveFile(res, fileUrl, ext, cacheControl, status = 200) {
+function serveFile(res, fileUrl, ext, cacheControl, status = 200, contentType) {
   const body = fs.readFileSync(fileUrl);
   res.writeHead(status, {
-    'Content-Type': MIME[ext] ?? 'application/octet-stream',
+    'Content-Type': contentType ?? MIME[ext] ?? 'application/octet-stream',
     'Cache-Control': cacheControl,
     ...SECURITY_HEADERS,
   });
@@ -3235,7 +3235,16 @@ function serveStatic(req, res, pathname) {
       : ext === '.html' || p === '/sw.js'
         ? 'no-cache'
         : 'public, max-age=3600';
-    return serveFile(res, fileUrl, ext, cache);
+    // Next's client-side router fetches a route's payload as `<route>/index.txt`
+    // and REFUSES it unless it comes back as text/x-component — served as plain
+    // text it falls back to a full page load, so every router.push/replace
+    // reloaded the whole app (a visible white flash, and a lost in-flight
+    // state). Only payload requests are retyped: the RSC header (or the router's
+    // `_rsc` cache-buster) marks them, so a real .txt file still serves as text.
+    const rsc =
+      ext === '.txt' &&
+      (req.headers.rsc !== undefined || (req.url ?? '').includes('_rsc='));
+    return serveFile(res, fileUrl, ext, cache, 200, rsc ? 'text/x-component' : undefined);
   } catch {
     // trailingSlash routes arrive without the slash too ("/today" → /today/index.html)
     try {

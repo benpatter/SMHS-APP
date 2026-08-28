@@ -50,7 +50,7 @@ export default function SetPasswordPage() {
 
   return (
     <div className="space-y-4">
-      <BackLink href="/portal/" label="Staff Portals" />
+      <BackLink href="/portal/" label="SM T.E.A.M. Member Portals" />
       <div>
         <h1 className="wordmark text-xl text-royal dark:text-[var(--text)]">Create your password</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
@@ -69,7 +69,7 @@ export default function SetPasswordPage() {
             </Link>
             <Link href="/portal/teacher/" className="flex-1">
               <Button variant="gold" className="w-full">
-                Teacher portal
+                Faculty & Staff
               </Button>
             </Link>
           </div>

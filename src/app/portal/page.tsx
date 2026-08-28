@@ -17,7 +17,9 @@ export default function PortalChooserPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="wordmark text-xl text-royal dark:text-[var(--text)]">Staff Portals</h1>
+      <h1 className="wordmark text-xl text-royal dark:text-[var(--text)]">
+        SM T.E.A.M. Member Portals
+      </h1>
 
       <section>
         <p className="mb-2 text-sm text-[var(--muted)]">
@@ -46,7 +48,7 @@ export default function PortalChooserPage() {
                 <BookIcon className="h-6 w-6" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block font-bold text-[var(--text)]">Faculty portal</span>
+                <span className="block font-bold text-[var(--text)]">Faculty &amp; Staff Portal</span>
                 <span className="block text-xs text-[var(--muted)]">Your schedule and Aeries</span>
               </span>
               <ChevronRight className="h-5 w-5 text-[var(--muted)]" />
@@ -58,7 +60,7 @@ export default function PortalChooserPage() {
       {/* Signed-in staff sign out here; everyone else backs out to the welcome
           screen. Same full-width button as the student/parent home. */}
       <Button variant="outline" className="w-full text-[var(--muted)]" onClick={signOutStaff}>
-        {mounted && staffProfile ? 'Sign out' : 'Not staff? Go back'}
+        {mounted && staffProfile ? 'Sign out' : 'Go back'}
       </Button>
     </div>
   );

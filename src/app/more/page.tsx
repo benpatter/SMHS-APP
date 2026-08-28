@@ -132,7 +132,7 @@ export default function MorePage() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block font-bold text-[var(--text)]">Grades</span>
-              <span className="block text-xs text-[var(--muted)]">Opens the Aeries app (or web)</span>
+              <span className="block text-xs text-[var(--muted)]">Aeries website</span>
             </span>
             <ChevronRight className="h-5 w-5 text-[var(--muted)]" />
           </Card>

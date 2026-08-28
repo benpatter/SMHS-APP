@@ -466,7 +466,7 @@ export function PortalGate({
       {(step === 'identity' || !member) && (
         <Link href="/portal/" className="block">
           <Button variant="outline" className="w-full text-[var(--muted)]">
-            Back to staff portals
+            Go back
           </Button>
         </Link>
       )}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
@@ -149,6 +149,32 @@ export function AppShell({ children }: { children: ReactNode }) {
   // open. Home is the app; staff reach their portal through the visible
   // entries on Home and More.
 
+  // A choice on the welcome screen (student, parent, staff) records itself and
+  // then navigates. The record alone would drop the overlay instantly and leave
+  // home showing until the destination arrived, so the welcome screen is held
+  // here — on a spinner — from the tap until the route it named is on screen.
+  // The hold is local state on purpose: a reload clears it, and the recorded
+  // choice (which persists) is what puts the device on the right screen.
+  const [leavingTo, setLeavingTo] = useState<string | null>(null);
+  useEffect(() => {
+    if (!leavingTo) return;
+    const trimmed = (p: string) => (p.length > 1 ? p.replace(/\/+$/, '') : p);
+    if (trimmed(pathname) === trimmed(leavingTo)) {
+      setLeavingTo(null);
+      return;
+    }
+    // A navigation that never lands must not strand anyone on the spinner.
+    const t = setTimeout(() => setLeavingTo(null), 2500);
+    return () => clearTimeout(t);
+  }, [leavingTo, pathname]);
+
+  // The staff portals are a closed room: from the portal chooser and the
+  // sign-in gates, the only way out is the screen's own "Go back". Hiding the
+  // tab bar (and the header's home link) keeps someone who picked the staff
+  // door from wandering into the student app without ever signing in. Signed-in
+  // staff get the nav back — their Home tab is their portal.
+  const portalLocked = pathname.startsWith('/portal') && !(mounted && staffProfile);
+
   // Parent devices boot to the parent hub until a child's page is opened.
   // While that redirect is in flight, `parentRedirecting` below holds the home
   // content so the dashboard never flashes before the hub paints.
@@ -165,13 +191,19 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="mx-auto flex h-[100dvh] max-w-screen-sm flex-col overflow-hidden">
       <header className="safe-top safe-x z-30 shrink-0 border-b border-[var(--divider)] bg-[var(--surface)]">
         <div className="flex h-14 items-center justify-center px-4">
-          <Link
-            href="/"
-            aria-label={`${SCHOOL.shortName} home`}
-            className="tap flex items-center rounded-md px-2 py-1.5 outline-none focus-visible:ring-2 focus-visible:ring-gold"
-          >
-            <BrandMark size="sm" />
-          </Link>
+          {portalLocked ? (
+            <span className="flex items-center px-2 py-1.5">
+              <BrandMark size="sm" />
+            </span>
+          ) : (
+            <Link
+              href="/"
+              aria-label={`${SCHOOL.shortName} home`}
+              className="tap flex items-center rounded-md px-2 py-1.5 outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            >
+              <BrandMark size="sm" />
+            </Link>
+          )}
         </div>
         <div className="h-0.5 bg-gold" />
         <AlertBanner />
@@ -197,14 +229,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
       </main>
 
-      <BottomNav />
+      {!portalLocked && <BottomNav />}
 
       {/* The password-setup page is exempt from onboarding: it's reached from
           an emailed link, usually on a device that has never opened the app, and
           the "Who are you?" overlay would sit on top of the form and block the
           one thing the link exists to do. Anyone holding a setup link is staff —
           the page marks the device accordingly (see its chooseStaff call). */}
-      {ready && userRole === null && !pathname.startsWith('/portal/set-password') && <Onboarding />}
+      {((ready && userRole === null && !pathname.startsWith('/portal/set-password')) ||
+        leavingTo !== null) && (
+        <Onboarding leaving={leavingTo !== null} onLeave={setLeavingTo} />
+      )}
     </div>
   );
 }
