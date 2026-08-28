@@ -9,7 +9,7 @@ import { ChevronRight } from '@/components/icons';
 
 /** The Prayer Request Microsoft Form run by Campus Ministry (admin-overridable). */
 const PRAYER_REQUEST_URL =
-  'https://forms.office.com/Pages/ResponsePage.aspx?id=eUz7x9nGxEaboG2vvtqMKNLKXkJT7V5HufEY6X21865UNkc4RDRWTE9YUDY1QU9JUzhQU1Y0SUQ0VS4u';
+  'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=eUz7x9nGxEaboG2vvtqMKNLKXkJT7V5HufEY6X21865UNEo0VUk0MVgwTTczV1lBRzNUVUhFNDE0Ni4u';
 
 /**
  * Faith: the heart of SMCHS's Catholic tradition in the app. A scripture

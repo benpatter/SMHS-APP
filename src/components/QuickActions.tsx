@@ -8,32 +8,36 @@ import { cx } from './ui';
 
 /**
  * Glanceable rows of shortcuts. Faith leads (our Catholic identity comes first),
- * then Grades (Aeries hand-off). Parents get the simplified set — no Campus
+ * then Grades (Aeries hand-off), then Safety — the section, for anything from a
+ * security contact to the tip form. Parents get the simplified set — no Campus
  * Dining — leaving room for their "Go back" button.
  *
- * The tip line gets the last row to itself, full width, for both students and
- * parents: reporting a safety concern is the one thing here nobody should have
- * to go hunting through More → Safety & Security for.
+ * The tip line still gets the last row to itself, full width, for students and
+ * parents alike. The Safety tile is where you go to read; this row is the one
+ * tap that files a report, and reporting a concern is the one thing here nobody
+ * should have to navigate for.
  */
 export function QuickActions({ parent = false }: { parent?: boolean }) {
   return (
     <div className="space-y-2">
       {parent ? (
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-6 gap-2">
+          <IconTile href="/more/faith/" Icon={CrossIcon} label="Faith" className="col-span-2" />
+          {/* Grades: hands off to Aeries, never rebuilt in-app. */}
+          <IconTile onClick={openAeries} Icon={GradIcon} label="Grades" className="col-span-2" />
+          <IconTile href="/more/safety/" Icon={ShieldIcon} label="Safety" className="col-span-2" />
+          <IconTile href="/more/schedule/" Icon={ClockIcon} label="Schedule" className="col-span-3" />
+          <IconTile href="/more/attendance/" Icon={PhoneIcon} label="Absent?" className="col-span-3" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
           <IconTile href="/more/faith/" Icon={CrossIcon} label="Faith" />
           {/* Grades: hands off to Aeries, never rebuilt in-app. */}
           <IconTile onClick={openAeries} Icon={GradIcon} label="Grades" />
+          <IconTile href="/more/safety/" Icon={ShieldIcon} label="Safety" />
           <IconTile href="/more/schedule/" Icon={ClockIcon} label="Schedule" />
           <IconTile href="/more/attendance/" Icon={PhoneIcon} label="Absent?" />
-        </div>
-      ) : (
-        <div className="grid grid-cols-6 gap-2">
-          <IconTile href="/more/faith/" Icon={CrossIcon} label="Faith" className="col-span-3" />
-          {/* Grades: hands off to Aeries, never rebuilt in-app. */}
-          <IconTile onClick={openAeries} Icon={GradIcon} label="Grades" className="col-span-3" />
-          <IconTile href="/more/schedule/" Icon={ClockIcon} label="Schedule" className="col-span-2" />
-          <IconTile href="/more/attendance/" Icon={PhoneIcon} label="Absent?" className="col-span-2" />
-          <IconTile href="/more/menu/" Icon={UtensilsIcon} label="Dining" className="col-span-2" />
+          <IconTile href="/more/menu/" Icon={UtensilsIcon} label="Dining" />
         </div>
       )}
       <TipLineTile />
