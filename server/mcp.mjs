@@ -306,6 +306,16 @@ function registerPublicTools(tool) {
     { postId: z.string().regex(/^\d{1,9}$/) },
     ({ postId }) => api(`/api/weekly?post=${postId}`).then(r => r.body))
 
+  tool('list_news',
+    'School news from smhs.org — the Campus, Arts and Sports boards merged newest-first (id, channel, title, date, thumbnail).',
+    { page: z.number().int().min(1).max(200).optional() },
+    ({ page }) => api(`/api/news?page=${page || 1}`).then(r => r.body))
+
+  tool('get_news_post',
+    'Full sanitized body of one news story. Pass the id from list_news verbatim ("news-<board>-<post>").',
+    { id: z.string().regex(/^(?:news-)?\d{1,9}-\d{1,9}$/) },
+    ({ id }) => api(`/api/news?post=${encodeURIComponent(id)}`).then(r => r.body))
+
   tool('get_bell_schedule',
     'Rotating-block bell schedule keyed by date: label, rotation day, periods with start/end, lunch tracks, grade groups, no-school days. Defaults to the next 14 days — pass from/to (yyyy-MM-dd) for other ranges. For a single day prefer get_day_schedule. Admin overrides in get_app_data scheduleDays take precedence per date.',
     { from: ISO_DATE.optional(), to: ISO_DATE.optional() },

@@ -40,8 +40,16 @@ export interface PersonalClass {
   /**
    * Marked as a science class. Science classes always eat first lunch regardless
    * of building, so this overrides the building when resolving the lunch track.
+   * No longer settable in the editor — the lunch picker's "1st Lunch" says the
+   * same thing in one control — but still honored for schedules that carry it.
    */
   science?: boolean;
+  /**
+   * Hand-set lunch for this block, for the cases the chart gets wrong (a class
+   * that eats with the other group, a section that moved rooms). Beats both the
+   * science flag and the building when this block is the one deciding lunch.
+   */
+  lunch?: LunchTrack;
 }
 
 export type PersonalSchedule = Record<number, PersonalClass>;

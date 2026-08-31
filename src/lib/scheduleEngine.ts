@@ -95,6 +95,8 @@ export interface LunchInfo {
   building: string | null;
   /** The resolved lunch track, or null when unknown (no building / no class year). */
   track: LunchTrack | null;
+  /** True when the track came from the student's own override, not the chart. */
+  overridden: boolean;
 }
 
 /** Does this day hand lunch out by grade level rather than by building? */
@@ -128,6 +130,7 @@ export function lunchInfoForDay(
       decidingPeriod: null,
       building: null,
       track: mine?.track ?? null,
+      overridden: false,
     };
   }
   // The lunch split lives on exactly one class block (its first/second copies);
@@ -141,12 +144,17 @@ export function lunchInfoForDay(
   // Science classes always eat first lunch regardless of building: the science
   // flag overrides the building when resolving the track. (A free deciding block
   // isn't a real class, so a stale science flag on it doesn't apply.)
+  //
+  // A hand-set lunch on the deciding block beats both. The chart is right almost
+  // always, but "almost" is why the override exists: a class that eats with the
+  // other group has no other way to say so, and the student knows which line
+  // they stand in better than a building letter does.
+  const override = deciding?.free ? undefined : deciding?.lunch;
   const track = !dual
     ? null
-    : deciding?.science && !deciding?.free
-      ? 'first'
-      : lunchForBuilding(building);
-  return { dual, by: 'building', decidingPeriod, building, track };
+    : (override ??
+      (deciding?.science && !deciding?.free ? 'first' : lunchForBuilding(building)));
+  return { dual, by: 'building', decidingPeriod, building, track, overridden: Boolean(dual && override) };
 }
 
 /** A student's lunch track for a day, or null when unknown/single-lunch. */

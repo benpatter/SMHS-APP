@@ -454,7 +454,7 @@ function MetricsDashboard() {
 
       <Collapse title="Support" sub={`${openTickets.length} open · ${resolvedTickets.length} resolved`}>
         {openTickets.length === 0 ? (
-          <p className="text-sm text-[var(--muted)]">No open tickets. Nice and quiet.</p>
+          <p className="text-sm text-[var(--muted)]">No open tickets right now.</p>
         ) : (
           <div className="space-y-2">
             {openTickets.map((t) => (

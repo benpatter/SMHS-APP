@@ -97,6 +97,63 @@ export async function fetchWeeklyPost(id: string): Promise<Announcement | null> 
   };
 }
 
+// ---- School news (smhs.org Campus / Arts / Sports boards) --------------------
+
+export interface NewsItem {
+  /** "news-<elementId>-<postId>" — names the board as well as the post. */
+  id: string;
+  /** "Campus News", "Arts News" or "Sports News". */
+  channel: string;
+  title: string;
+  postedAt: string;
+  /** Thumbnail from the story card, or '' when the school posted none. */
+  image: string;
+}
+
+export interface NewsPage {
+  items: NewsItem[];
+  hasMore: boolean;
+}
+
+/** One page of the merged news feed, newest first. */
+export async function fetchNews(page = 1): Promise<NewsPage | null> {
+  const j = await getJson(`/api/news?page=${page}`);
+  if (!j || !Array.isArray(j.items)) return null;
+  return {
+    hasMore: !!j.hasMore,
+    items: j.items.map(
+      (it: Partial<NewsItem>): NewsItem => ({
+        id: String(it.id ?? ''),
+        channel: it.channel || 'News',
+        title: it.title || '',
+        postedAt: it.postedAt || '',
+        image: it.image || '',
+      }),
+    ),
+  };
+}
+
+/** A story on the reading page: an announcement plus the photo the school ran. */
+export type NewsPost = Announcement & { image: string };
+
+/** One news story with its full formatted body, for the reading page. */
+export async function fetchNewsPost(id: string): Promise<NewsPost | null> {
+  const j = await getJson(`/api/news?post=${encodeURIComponent(id)}`);
+  if (!j || !j.item) return null;
+  const it = j.item;
+  return {
+    id: it.id,
+    title: it.title || 'News',
+    body: htmlToText(it.bodyHtml || ''),
+    bodyHtml: it.bodyHtml || '',
+    audience: null,
+    channel: it.channel || 'News',
+    author: 'SMCHS',
+    postedAt: it.postedAt || '',
+    image: it.image || '',
+  };
+}
+
 /**
  * The real, per-date, rotated bell schedule (date → day). Source of truth for
  * day types, rotation, and which period meets when.

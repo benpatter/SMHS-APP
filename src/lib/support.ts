@@ -1,7 +1,7 @@
 /**
  * Client for the anonymous support-ticket API. A ticket carries no identity —
  * the server knows only this device's random metrics id, which is how the
- * resolution notice ("Your Support Ticket N was resolved") finds its way back
+ * resolution notice ("The app team resolved Ticket N") finds its way back
  * to the sender and to nobody else.
  */
 'use client';

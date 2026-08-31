@@ -27,6 +27,56 @@ export interface MenuItem {
   hidden?: boolean;
 }
 
+/**
+ * Hanna's service hours as the school publishes them ("Hours: 7:00 a.m. — 3:00
+ * p.m. daily"). The live page is still read first and an admin override still
+ * beats both — this is what the card shows when neither is available, which on
+ * a phone with no signal is most of the time. Before it existed the card said
+ * "Hours unavailable" for the school's own published hours.
+ */
+export const DINING_HOURS_DEFAULT = '7:00 AM – 3:00 PM';
+
+/**
+ * The school's lunch-by-building chart, verbatim from the Campus Dining page.
+ * Same deal: the live table wins, this keeps "Who eats when" answerable offline.
+ * `buildings.ts` derives a student's own track from the same assignment.
+ */
+export const DINING_LUNCH_DEFAULT: { first: string[]; second: string[] } = {
+  first: [
+    'Crean Hall (B building)',
+    'Talon Dome',
+    'Borchard Science Labs (C building)',
+    'Academic Services Center (S building)',
+    'All science classes',
+  ],
+  second: [
+    'Lyon Hall (A building)',
+    'Trailers (T buildings)',
+    'Eagle Athletic Center (R building)',
+    'Moiso Family Pavilion (Gym)',
+    'G building',
+    'Library',
+  ],
+};
+
+/**
+ * The school's Campus Dining page — the page every field here is copied from,
+ * and where the menu itself lives when Hanna's changes it mid-year.
+ */
+export const DINING_URL = 'https://www.smhs.org/campus-life/campusdining';
+
+/**
+ * The Campus Dining Guidelines, verbatim from that page. The live scrape wins
+ * when the proxy can reach the site; this is what an offline phone shows, which
+ * is exactly when a student is standing in the line wondering about the rules.
+ */
+export const DINING_GUIDELINES_DEFAULT: string[] = [
+  'SMCHS is a closed campus, so students must remain on campus during the nutrition breaks.',
+  'Students must stay in the designated boundaries during the nutrition breaks.',
+  'The area to the far left side of the service windows is a dedicated Haute Cafe line.',
+  'Students are expected to adhere to the SMCHS Cell Phone Policy at all times. However, students may use their cell phones to pay for lunch. See the SMCHS Cell Phone Policy for more information.',
+];
+
 export const MENU_SECTIONS: { id: MenuSection; label: string; note?: string }[] = [
   { id: 'breakfast', label: 'Breakfast' },
   { id: 'lunch', label: 'Lunch' },
