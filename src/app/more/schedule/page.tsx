@@ -6,8 +6,28 @@ import { useMounted } from '@/lib/hooks';
 import { BackLink } from '@/components/BackLink';
 import { Button, Card, Field, LinkButton, Select, TextInput, cx } from '@/components/ui';
 import { PencilIcon, TrashIcon, CheckIcon, ShareIcon } from '@/components/icons';
-import type { PersonalClass } from '@/lib/types';
-import { BUILDINGS } from '@/config/buildings';
+import type { LunchTrack, PersonalClass } from '@/lib/types';
+import { BUILDINGS, lunchLabel } from '@/config/buildings';
+
+/** The lunch a class eats: derived from the building, or picked by hand. */
+const LUNCH_CHOICES: { value: 'auto' | LunchTrack; label: string }[] = [
+  { value: 'auto', label: 'Auto' },
+  { value: 'first', label: '1st Lunch (science class)' },
+  { value: 'second', label: '2nd Lunch' },
+];
+
+/**
+ * Fold a legacy `science` flag into the lunch choice. The checkbox that set it
+ * is gone, so a schedule still carrying it would show "Auto" while the engine
+ * went on forcing first lunch, with no control left anywhere to clear it.
+ * Folding it into the draft means opening the editor is enough to fix it, and
+ * "Auto" then really does mean auto.
+ */
+function foldScience(p: PersonalClass): PersonalClass {
+  if (!p.science) return p;
+  const { science: _science, ...rest } = p;
+  return { ...rest, lunch: p.lunch ?? 'first' };
+}
 
 function PeriodEditor({
   n,
@@ -23,7 +43,7 @@ function PeriodEditor({
   onSave: (p: PersonalClass) => void;
   onCancel: () => void;
 }) {
-  const [draft, setDraft] = useState<PersonalClass>(initial);
+  const [draft, setDraft] = useState<PersonalClass>(() => foldScience(initial));
 
   return (
     <div className="space-y-3 border-t border-[var(--divider)] bg-black/[0.02] px-4 py-4 dark:bg-white/[0.02]">
@@ -69,18 +89,34 @@ function PeriodEditor({
         />
       </Field>
 
-      <label className="flex items-center gap-3 pt-1">
-        <input
-          type="checkbox"
-          checked={!!draft.science}
-          onChange={(e) => setDraft((d) => ({ ...d, science: e.target.checked }))}
-          disabled={draft.free}
-          className="h-5 w-5 accent-[var(--royal)]"
-        />
-        <span className={cx('text-sm', draft.free ? 'text-[var(--muted)]' : 'text-[var(--text)]')}>
-          Science class: always first lunch, regardless of building
-        </span>
-      </label>
+      {/* Lunch as a pick-one list: three rows a thumb can hit, with the
+          science case named on the option instead of in a second control.
+          Hidden on a free period, which decides no lunch. */}
+      {!draft.free && (
+        <fieldset>
+          <legend className="text-xs font-semibold text-[var(--muted)]">Lunch</legend>
+          <div className="mt-1 divide-y divide-[var(--divider)] overflow-hidden rounded-card border border-[var(--divider)]">
+            {LUNCH_CHOICES.map((c) => (
+              <label key={c.value} className="tap flex items-center gap-3 px-3 py-2">
+                <input
+                  type="radio"
+                  name={`lunch-${n}`}
+                  value={c.value}
+                  checked={(draft.lunch ?? 'auto') === c.value}
+                  onChange={() =>
+                    setDraft((d) => ({ ...d, lunch: c.value === 'auto' ? undefined : c.value }))
+                  }
+                  className="h-5 w-5 shrink-0 accent-[var(--royal)]"
+                />
+                <span className="text-sm text-[var(--text)]">{c.label}</span>
+              </label>
+            ))}
+          </div>
+          <span className="mt-1 block text-xs text-[var(--muted)]">
+            Auto follows your building. Change it only if this class is an exception.
+          </span>
+        </fieldset>
+      )}
 
       {allowFree && (
         <label className="flex items-center gap-3">
@@ -134,7 +170,7 @@ export default function SchedulePage() {
       <Card className="divide-y divide-[var(--divider)] overflow-hidden">
         {periods.map((n) => {
           const pc = (mounted && schedule[n]) || {};
-          const filled = !!(pc.name || pc.room || pc.teacher || pc.free || pc.science);
+          const filled = !!(pc.name || pc.room || pc.teacher || pc.free || pc.science || pc.lunch);
           const isEditing = editing === n;
           return (
             <div key={n}>
@@ -155,9 +191,16 @@ export default function SchedulePage() {
                       {pc.name ? `Period ${n} · ${pc.name}` : `Period ${n}`}
                     </div>
                   )}
-                  {(pc.room || pc.building || pc.teacher) && !pc.free && (
+                  {(pc.room || pc.building || pc.teacher || pc.lunch || pc.science) && !pc.free && (
                     <div className="truncate text-xs text-[var(--muted)]">
-                      {[[pc.building, pc.room].filter(Boolean).join(' '), pc.teacher]
+                      {[
+                        [pc.building, pc.room].filter(Boolean).join(' '),
+                        pc.teacher,
+                        // A legacy science class reads as the first-lunch pick
+                        // it will become the moment the row is opened.
+                        (pc.lunch ?? (pc.science ? 'first' : null)) &&
+                          lunchLabel(pc.lunch ?? 'first'),
+                      ]
                         .filter(Boolean)
                         .join(' · ')}
                     </div>

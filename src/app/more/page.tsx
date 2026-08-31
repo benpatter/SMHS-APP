@@ -177,7 +177,7 @@ export default function MorePage() {
           <Row href="/more/contacts/" Icon={UsersIcon} label="Contacts" sub="Who to ask, with numbers and emails" />
           <Row href="/more/attendance/" Icon={PhoneIcon} label="Report an Absence" sub="Who to contact and how" />
           <Row href="/more/safety/" Icon={ShieldIcon} label="Safety & Security" sub="Security contact and anonymous tips" />
-          <Row href="/more/support/" Icon={MailIcon} label="Open a Support Ticket" sub="Report an app problem — anonymously" />
+          <Row href="/more/support/" Icon={MailIcon} label="Open a Support Ticket" sub="Report an app problem, anonymously" />
         </Card>
       </section>
 

@@ -56,17 +56,17 @@ export default function SupportPage() {
       <div>
         <h1 className="wordmark text-xl text-royal dark:text-[var(--text)]">Support Ticket</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          Something broken or confusing? Tell the school&apos;s app team. Tickets are anonymous —
-          nothing about you is sent unless you choose to add a contact email.
+          Tell the school&apos;s app team what went wrong. Your ticket carries no name and no
+          account, only what you type here.
         </p>
       </div>
 
       {sentNum !== null && (
         <Card className="border-gold/40 bg-gold/10 p-4">
-          <p className="font-semibold text-[var(--text)]">Support Ticket {sentNum} was sent</p>
+          <p className="font-semibold text-[var(--text)]">Ticket {sentNum} is with the app team</p>
           <p className="mt-1 text-sm text-[var(--muted)]">
-            You&apos;ll get a notice in the app when it&apos;s resolved. Keep the number if you
-            want to follow up.
+            You&apos;ll see a notice here once they resolve it. Write the number down if you want
+            to follow up.
           </p>
         </Card>
       )}
@@ -86,12 +86,12 @@ export default function SupportPage() {
             onChange={(e) => setBody(e.target.value)}
             maxLength={4000}
             className="min-h-[120px]"
-            placeholder="Describe what happened, where in the app, and what you expected."
+            placeholder="Say what happened, which screen you were on, and what you expected instead."
           />
         </Field>
         <Field
           label="Contact email (optional)"
-          hint="Only used if the app team can't resolve your ticket and needs to reach you. Leave it blank to stay fully anonymous."
+          hint="The app team writes back only when they can't fix your ticket without you. Leave it blank to stay anonymous."
         >
           <TextInput
             type="email"
@@ -121,7 +121,7 @@ export default function SupportPage() {
               <div key={t.num} className="flex items-center gap-3 px-4 py-3">
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-[var(--text)]">
-                    Ticket {t.num} — {t.subject}
+                    Ticket {t.num}: {t.subject}
                   </span>
                   <span className="block text-xs text-[var(--muted)]">
                     {formatRelative(t.createdAt)}

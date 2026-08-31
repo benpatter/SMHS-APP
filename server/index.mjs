@@ -71,6 +71,8 @@ const SOURCES = {
   bell: 'https://www.calendarwiz.com/CalendarWiz_iCal.php?crd=santamargaritachs',
   // The school's "Weekly Announcements" board (ETV announcements page).
   weekly: 'https://www.smhs.org/other/parents/etv-announcements',
+  // School news: three Posts boards (Campus, Arts, Sports) on one page.
+  news: 'https://www.smhs.org/about/communications/news',
   // The school's Faculty & Staff directory (Finalsite constituent manager).
   staff: 'https://www.smhs.org/about/facultystaff',
   // Campus-life pages (Finalsite CMS) — scraped into small JSON feeds so the
@@ -1081,7 +1083,11 @@ function parseWeeklyList(html) {
   return { posts, hasMore: /fsLoadMore|load more/i.test(html) };
 }
 
-/** Extract one weekly post: title + body (formatted HTML) + real date, from the popup. */
+/**
+ * Extract one board post: title + body (formatted HTML) + real date, from the
+ * popup. Shared by the Weekly Announcements board and the three news boards —
+ * they are the same Finalsite Posts element with different content.
+ */
 function parseWeeklyPost(html) {
   const postedAt = (html.match(/datetime="([^"]+)"/) || [])[1] || '';
   const titleM = html.match(/<div class="fsTitle[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
@@ -1090,11 +1096,167 @@ function parseWeeklyPost(html) {
   let bodyHtml = '';
   if (start >= 0) {
     const from = html.indexOf('>', start) + 1;
-    let end = html.indexOf('fsComment', from);
-    if (end < 0) end = from + 12000;
-    bodyHtml = sanitizeHtml(html.slice(from, end));
+    // Whichever comes first: the comment block, the end of the post, or a hard
+    // cap. Without the </article> bound a post with comments turned off ran on
+    // into the element footer.
+    const bounds = [html.indexOf('fsComment', from), html.indexOf('</article>', from)]
+      .filter((i) => i >= 0)
+      .concat(from + 12000);
+    bodyHtml = sanitizeHtml(html.slice(from, Math.min(...bounds)));
   }
   return { title, postedAt, bodyHtml };
+}
+
+// ---- School news ------------------------------------------------------------
+//
+// smhs.org/about/communications/news stacks three Finalsite Posts boards on one
+// page: CAMPUS NEWS, ARTS NEWS, SPORTS NEWS. Each is its own element with its
+// own "Load More" stream, so the feed the app shows is the three merged and
+// sorted newest-first. Post ids are unique per board only, so an app-side id
+// carries the element id too ("news-48837-3409") and the reading page can ask
+// for the right board's popup.
+
+/** Board headings we surface, in the order the school lists them. */
+const NEWS_SECTIONS = [
+  { heading: /^campus news$/i, label: 'Campus News' },
+  { heading: /^arts news$/i, label: 'Arts News' },
+  { heading: /^sports news$/i, label: 'Sports News' },
+];
+
+const NEWS_HEADERS = {
+  'X-Requested-With': 'XMLHttpRequest',
+  Referer: SOURCES.news,
+};
+
+/** One board's "Load More" fragment. `_` busts the upstream's per-URL cache. */
+const NEWS_PAGE = (eid, startRow) =>
+  `${SMHS}/fs/elements/${eid}?start_row=${startRow}&is_draft=false&is_load_more=true` +
+  `&parent_id=${eid}&_=${Date.now()}`;
+
+const NEWS_POPUP = (eid, pid) =>
+  `${SMHS}/fs/elements/${eid}?is_popup=true&post_id=${pid}&show_post=true&is_draft=false`;
+
+/** The best thumbnail on a post card: the widest the site offers up to 800px. */
+function newsImage(block) {
+  const m = block.match(/data-image-sizes="([^"]*)"/);
+  if (!m) return '';
+  try {
+    const sizes = JSON.parse(decodeEntities(m[1]));
+    const usable = sizes.filter((s) => typeof s?.url === 'string' && s.width <= 800);
+    const pick = usable.sort((a, b) => b.width - a.width)[0];
+    return pick && /^https:\/\//.test(pick.url) ? pick.url : '';
+  } catch {
+    return ''; // an image we can't read is not worth failing the whole feed over
+  }
+}
+
+/** Post cards in one board fragment → stubs (title, date, thumbnail). */
+function parseNewsItems(html, eid, channel) {
+  const items = [];
+  const seen = new Set();
+  for (const m of html.matchAll(/<article\b[\s\S]*?<\/article>/gi)) {
+    const block = m[0];
+    const postId = (block.match(/data-post-id="(\d+)"/) || [])[1];
+    if (!postId || seen.has(postId)) continue;
+    // The title anchor is the one inside fsTitle; the "Read More" link repeats
+    // the same href, so anchor the match on fsTitle rather than fsPostLink.
+    const titleM = block.match(/<div class="fsTitle[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
+    const title = titleM ? decodeEntities(stripTags(titleM[1])).trim() : '';
+    if (!title) continue;
+    seen.add(postId);
+    items.push({
+      id: `news-${eid}-${postId}`,
+      channel,
+      title,
+      postedAt: (block.match(/<time datetime="([^"]+)"/) || [])[1] || '',
+      image: newsImage(block),
+    });
+  }
+  return items;
+}
+
+/**
+ * The news page's boards: element id, label, and how many posts one fragment
+ * carries (each board is configured separately — two for Campus and Arts,
+ * three for Sports — and that count is the page stride).
+ */
+function parseNewsBoards(html) {
+  const boards = [];
+  for (const chunk of html.split(/id="fsEl_/).slice(1)) {
+    const eid = (chunk.match(/^(\d+)/) || [])[1];
+    if (!eid) continue;
+    // The board's own <h2> sits in its header, well inside the first kilobyte;
+    // looking further would pick up the NEXT element's heading.
+    const heading = decodeEntities(
+      stripTags((chunk.slice(0, 1200).match(/<h2[^>]*>([\s\S]*?)<\/h2>/i) || [])[1] || ''),
+    ).trim();
+    const section = NEWS_SECTIONS.find((s) => s.heading.test(heading));
+    if (!section) continue;
+    const items = parseNewsItems(chunk, eid, section.label);
+    if (items.length === 0) continue;
+    // The board's own Load More button carries the row its next page starts at,
+    // which is the stride, and its absence is how a board says it has nothing
+    // left. Counting the cards is the fallback for a board with no button.
+    const more = /fsLoadMoreButton/i.test(chunk);
+    const nextRow = Number((chunk.match(/data-start-row="(\d+)"/) || [])[1]) || 0;
+    boards.push({
+      eid,
+      label: section.label,
+      size: nextRow > 1 ? nextRow - 1 : items.length,
+      more,
+      items,
+    });
+  }
+  return boards;
+}
+
+/** Newest first; posts with no date sink to the bottom rather than to the top. */
+function byPostedAtDesc(a, b) {
+  return (b.postedAt || '').localeCompare(a.postedAt || '');
+}
+
+/**
+ * The three boards, with the posts the news page itself carries. Deliberately
+ * on the normal cache interval and not the six-hour campus one: page 1 of the
+ * feed IS these posts, so a longer life here would have held a new story back
+ * for hours behind a page cache that expires in ten minutes.
+ */
+function newsBoards() {
+  return cached('news-boards', async () => parseNewsBoards(await fetchText(SOURCES.news)));
+}
+
+/**
+ * One page of the merged feed. Page 1 comes from the news page itself (it is
+ * already the school's own front-of-feed selection); later pages walk each
+ * board's Load More stream in step.
+ */
+async function newsPage(page) {
+  const boards = await newsBoards();
+  if (boards.length === 0) return { items: [], hasMore: false };
+
+  if (page === 1) {
+    return {
+      items: boards.flatMap((b) => b.items).sort(byPostedAtDesc),
+      // Offer "Load more" only where a board still shows one. Saying "yes"
+      // unconditionally spent three upstream requests to append nothing.
+      hasMore: boards.some((b) => b.more),
+    };
+  }
+
+  const pages = await Promise.all(
+    boards.map(async (b) => {
+      const startRow = (page - 1) * b.size + 1;
+      try {
+        return parseNewsItems(await fetchText(NEWS_PAGE(b.eid, startRow), NEWS_HEADERS), b.eid, b.label);
+      } catch {
+        return []; // one board being unreachable must not empty the whole feed
+      }
+    }),
+  );
+  const items = pages.flat().sort(byPostedAtDesc);
+  // The stream is exhausted when no board had a full fragment left to give.
+  const hasMore = pages.some((p, i) => p.length >= boards[i].size);
+  return { items, hasMore };
 }
 
 // ---- Faculty & Staff directory ----------------------------------------------
@@ -1108,6 +1270,33 @@ function parseWeeklyPost(html) {
 
 const STAFF_TTL_MS = 25 * 60 * 60 * 1000; // daily interval refreshes; requests always serve cache
 
+/**
+ * Staff whose smhs.org card publishes no email, filled in from what the school
+ * told us directly. Without an email there is no account to sign in with, so
+ * these people are invisible to every picker in the app no matter what their
+ * title says. Keyed by the directory's exact display name; only ever ADDS an
+ * address, never replaces a published one.
+ */
+// A Map, not an object literal: the key is a name scraped off smhs.org, and a
+// person card reading "__proto__" would resolve to Object.prototype on a plain
+// {} — the same shape as the auth-token bug this codebase already fixed once.
+const DIRECTORY_EMAILS = new Map([
+  // VP of Finance — his title already carries Admin-portal access (see
+  // ADMIN_TITLE_PATTERNS); the missing address was the only thing stopping him.
+  ['Sam Auriemma', 'auriemmas@smhs.org'],
+]);
+
+/** Fill in the missing addresses on a roster (scraped fresh or read from disk). */
+function withDirectoryEmails(dir) {
+  if (!dir?.staff) return dir;
+  return {
+    ...dir,
+    staff: dir.staff.map((s) =>
+      s.email ? s : { ...s, email: (DIRECTORY_EMAILS.get(s.name) ?? '').toLowerCase() },
+    ),
+  };
+}
+
 /** All fsConstituentItem cards on one directory page → {name,title,email}[]. */
 function parseStaffItems(html) {
   const items = [];
@@ -1119,9 +1308,14 @@ function parseStaffItems(html) {
     if (!name) continue;
     const title = (b.match(/<div class="fsTitles">\s*([\s\S]*?)\s*<\/div>/) || [])[1] || '';
     const em = b.match(/insertEmail\("[^"]+",\s*"([^"]+)",\s*"([^"]+)"/);
-    const email = em ? `${[...em[2]].reverse().join('')}@${[...em[1]].reverse().join('')}` : '';
+    const scraped = em ? `${[...em[2]].reverse().join('')}@${[...em[1]].reverse().join('')}` : '';
+    const clean = decodeEntities(name.replace(/\s+/g, ' '));
+    // Filled in here, not after the merge: the roster keys people by email, so
+    // a person who arrives from one query with an address and from another
+    // without would otherwise split into two entries.
+    const email = scraped || DIRECTORY_EMAILS.get(clean) || '';
     items.push({
-      name: decodeEntities(name.replace(/\s+/g, ' ')),
+      name: clean,
       title: decodeEntities(title.replace(/\s+/g, ' ')),
       email: email.toLowerCase(),
     });
@@ -1262,12 +1456,29 @@ function parseDining(html) {
 
   const contact = (text.match(/[a-z0-9._-]+@smhs\.org/i) || [])[0] || '';
 
-  // "available starting at 7:00 am and will close at 3:00 pm daily."
-  const hm = text.match(/starting at\s*(\d{1,2}:\d{2}\s*[ap]m)[\s\S]*?close at\s*(\d{1,2}:\d{2}\s*[ap]m)/i);
-  const clock = (s) => s.toUpperCase().replace(/\s*([AP]M)/, ' $1');
+  // The page has rewritten this line at least twice. Both forms are read:
+  //   "available starting at 7:00 am and will close at 3:00 pm daily."
+  //   "Hours: 7:00 a.m. — 3:00 p.m. daily"   (the current one)
+  // A time is "7:00 am", "7:00 a.m." or "7:00 A.M.", so the dots are optional.
+  const T = String.raw`\d{1,2}:\d{2}\s*[ap]\.?m\.?`;
+  const hm =
+    text.match(new RegExp(String.raw`starting at\s*(${T})[\s\S]*?close at\s*(${T})`, 'i')) ||
+    text.match(new RegExp(String.raw`hours:?\s*(${T})\s*[-–—]+\s*(${T})`, 'i'));
+  const clock = (s) => s.replace(/\./g, '').toUpperCase().replace(/\s*([AP]M)/, ' $1');
   const hours = hm ? { open: clock(hm[1]), close: clock(hm[2]), daily: /daily/i.test(text) } : null;
 
-  const payment = ((text.match(/Accepted forms of payment:\s*([^.]*)\./i) || [])[1] || '')
+  // The methods now sit in a nested <ul> under the "Accepted forms of payment:"
+  // bullet, and that list ends with no full stop — so reading forward to the
+  // first "." swallowed the next paragraph and shipped "Discover For questions
+  // regarding campus dining" as a payment method. Read the list when there is
+  // one; the older single-sentence form is still handled below it.
+  const paymentAt = main.search(/Accepted forms of payment/i);
+  const afterPayment = paymentAt < 0 ? '' : main.slice(paymentAt);
+  const paymentList = /^[\s\S]{0,200}?<ul[^>]*>([\s\S]*?)<\/ul>/i.exec(afterPayment);
+  const paymentText = paymentList
+    ? [...paymentList[1].matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => textOf(m[1])).join(', ')
+    : (text.match(/Accepted forms of payment:\s*([^.]*)\./i) || [])[1] || '';
+  const payment = paymentText
     .split(/,\s*/)
     .map((s) => s.replace(/^and\s+/i, '').trim())
     .filter(Boolean);
@@ -1293,14 +1504,22 @@ function parseDining(html) {
     }
   }
 
-  // Guidelines: the sentence list between the lead-in and the sign-off.
-  const gm = text.match(/follow these guidelines:\s*([\s\S]*?)\s*Thank you for your cooperation/i);
-  const guidelines = gm
-    ? gm[1]
+  // Guidelines: the list under the lead-in. They are real <li> elements, so
+  // read them as a list. Splitting the block on sentence boundaries chopped the
+  // cell-phone bullet into three, shipping "However, students may use their
+  // cell phones to pay for lunch." to students as a rule of its own. The
+  // sentence split stays as the fallback for a page with no list.
+  const guidelinesAt = main.search(/follow these guidelines/i);
+  const guidelinesUl =
+    guidelinesAt < 0 ? null : /^[\s\S]{0,400}?<ul[^>]*>([\s\S]*?)<\/ul>/i.exec(main.slice(guidelinesAt));
+  const guidelines = guidelinesUl
+    ? [...guidelinesUl[1].matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
+        .map((m) => textOf(m[1]).trim())
+        .filter((s) => s.length > 12)
+    : ((text.match(/follow these guidelines:\s*([\s\S]*?)\s*Thank you for your cooperation/i) || [])[1] || '')
         .split(/(?<=\.)\s+(?=[A-Z])/)
         .map((s) => s.trim())
-        .filter((s) => s.length > 12)
-    : [];
+        .filter((s) => s.length > 12);
 
   return { title: "Hanna's on Campus", intro, hours, payment, contact, menuPdf, sections, lunch, guidelines };
 }
@@ -3288,7 +3507,9 @@ async function scrapeStaffAndSave() {
   // account creation until someone noticed. Keep the last good copy instead.
   let previous = null;
   try {
-    previous = JSON.parse(fs.readFileSync(STAFF_FILE, 'utf8'));
+    // The file on disk predates any address added to DIRECTORY_EMAILS since it
+    // was written, so it gets the same fill-in the fresh scrape does.
+    previous = withDirectoryEmails(JSON.parse(fs.readFileSync(STAFF_FILE, 'utf8')));
   } catch {
     /* no previous roster */
   }
@@ -3304,7 +3525,10 @@ async function scrapeStaffAndSave() {
 }
 
 try {
-  cache.set('staff', { at: Date.now(), value: JSON.parse(fs.readFileSync(STAFF_FILE, 'utf8')) });
+  cache.set('staff', {
+    at: Date.now(),
+    value: withDirectoryEmails(JSON.parse(fs.readFileSync(STAFF_FILE, 'utf8'))),
+  });
 } catch {
   // no disk copy yet — the background refresh below builds the first one
 }
@@ -3412,6 +3636,41 @@ const server = http.createServer(async (req, res) => {
         const { posts, hasMore } = parseWeeklyList(await fetchText(WEEKLY_PAGE(eid, startRow), XHR_HEADERS));
         return { items: posts.map((p) => ({ id: p.id, title: p.title })), hasMore };
       });
+      return send(res, 200, { source: 'smhs.org', page, hasMore, count: items.length, items });
+    }
+
+    if (url.pathname === '/api/news') {
+      // One story, with its body — the in-app reading page. The id names both
+      // the board element and the post. The element id is checked against the
+      // boards this page actually publishes, so it can't be pointed at some
+      // other part of the CMS; the post id is only bounded in shape, so a
+      // caller can still mint cache keys and upstream requests within that
+      // shape (MAX_CACHE_ENTRIES caps the damage, as it does for /api/weekly).
+      const postParam = url.searchParams.get('post');
+      if (postParam !== null) {
+        const m = /^(?:news-)?(\d{1,9})-(\d{1,9})$/.exec(postParam);
+        if (!m) return send(res, 400, { error: 'bad post id' });
+        const [, eid, postId] = m;
+        const boards = await newsBoards();
+        const board = boards.find((b) => b.eid === eid);
+        if (!board) return send(res, 404, { error: 'unknown news board' });
+        const post = await cached(`news-post-${eid}-${postId}`, async () => {
+          const html = await fetchText(NEWS_POPUP(eid, postId), NEWS_HEADERS);
+          // The popup carries the story's own photo above the title, at every
+          // size the CMS rendered. sanitizeHtml drops <img> from the body, so
+          // this is the only way the reading page can show it.
+          return { ...parseWeeklyPost(html), image: newsImage(html) };
+        });
+        return send(res, 200, {
+          source: 'smhs.org',
+          item: { id: `news-${eid}-${postId}`, channel: board.label, ...post },
+        });
+      }
+
+      // One page of the merged Campus/Arts/Sports feed. Clamped, so ?page=1e12
+      // can't mint an unbounded number of cache keys.
+      const page = Math.min(200, Math.max(1, Number(url.searchParams.get('page')) || 1));
+      const { items, hasMore } = await cached(`news-page-${page}`, () => newsPage(page));
       return send(res, 200, { source: 'smhs.org', page, hasMore, count: items.length, items });
     }
 

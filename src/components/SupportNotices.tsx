@@ -42,7 +42,7 @@ export function SupportNotices() {
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-semibold text-[var(--text)]">
-              Your Support Ticket {t.num} was resolved
+              The app team resolved Ticket {t.num}
             </span>
             <span className="block truncate text-xs text-[var(--muted)]">{t.subject}</span>
           </span>

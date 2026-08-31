@@ -182,7 +182,10 @@ function InfoOverrides() {
     <section className="space-y-2">
       <SectionTitle>Hours &amp; contact</SectionTitle>
       <Card className="space-y-3 p-4">
-        <Field label="Hours" hint="Blank = use the live smhs.org hours.">
+        <Field
+          label="Hours"
+          hint="Blank = the live smhs.org hours, or 7:00 AM – 3:00 PM when the site can't be reached."
+        >
           <TextInput
             value={hours}
             onChange={(e) => setHours(e.target.value)}

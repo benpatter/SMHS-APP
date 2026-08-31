@@ -68,7 +68,8 @@ separate sessions never share auth state.
 ## Tool map
 
 Reads (public): `get_health`, `list_events`, `list_sports`,
-`list_weekly_posts`, `get_weekly_post`, `get_bell_schedule`,
+`list_weekly_posts`, `get_weekly_post`, `list_news`, `get_news_post`,
+`get_bell_schedule`,
 `get_day_schedule` (one day with admin overrides applied, optionally filtered
 to a student's grade and lunch track), `find_period_times` (one-call planner:
 when do specific periods meet across a date range — built so models don't

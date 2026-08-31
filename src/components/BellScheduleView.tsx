@@ -55,8 +55,9 @@ export function BellScheduleView({
   // aren't theirs. Null when no class year is set — then everything shows, badged.
   const grade = useMemo(() => gradeFromGradYear(gradYear, currentSchoolYearStart()), [gradYear]);
   const group = grade == null ? null : grade >= 11 ? 'jrsr' : 'frso';
-  // Lunch is derived from the building of this day's 3rd class period; a null
-  // track (no building set) shows both lunches so the student sees every option.
+  // Lunch is derived from the building of this day's deciding class block (3rd
+  // period on a Regular day, but not on every day type); a null track (no
+  // building set) shows both lunches so the student sees every option.
   const lunchInfo = useMemo(() => lunchInfoForDay(sched, schedule, grade), [sched, schedule, grade]);
   const periods = useMemo(
     () => buildPeriodsToday(sched, now.toFormat('yyyy-MM-dd'), schedule, lunchInfo.track, group, grade),
@@ -126,6 +127,12 @@ export function BellScheduleView({
               <span className="text-xs text-[var(--muted)]">
                 by class year {isToday ? 'today' : 'that day'}
               </span>
+            )}
+            {/* Say when this came from the student's own override rather than
+                the building chart, so a wrong one is traceable to where it was
+                set instead of looking like the app guessing. */}
+            {lunchInfo.overridden && (
+              <span className="text-xs text-[var(--muted)]">set by you</span>
             )}
           </div>
         ) : (
