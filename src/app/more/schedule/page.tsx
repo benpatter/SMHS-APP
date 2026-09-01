@@ -16,19 +16,6 @@ const LUNCH_CHOICES: { value: 'auto' | LunchTrack; label: string }[] = [
   { value: 'second', label: '2nd Lunch' },
 ];
 
-/**
- * Fold a legacy `science` flag into the lunch choice. The checkbox that set it
- * is gone, so a schedule still carrying it would show "Auto" while the engine
- * went on forcing first lunch, with no control left anywhere to clear it.
- * Folding it into the draft means opening the editor is enough to fix it, and
- * "Auto" then really does mean auto.
- */
-function foldScience(p: PersonalClass): PersonalClass {
-  if (!p.science) return p;
-  const { science: _science, ...rest } = p;
-  return { ...rest, lunch: p.lunch ?? 'first' };
-}
-
 function PeriodEditor({
   n,
   initial,
@@ -43,7 +30,7 @@ function PeriodEditor({
   onSave: (p: PersonalClass) => void;
   onCancel: () => void;
 }) {
-  const [draft, setDraft] = useState<PersonalClass>(() => foldScience(initial));
+  const [draft, setDraft] = useState<PersonalClass>(initial);
 
   return (
     <div className="space-y-3 border-t border-[var(--divider)] bg-black/[0.02] px-4 py-4 dark:bg-white/[0.02]">
@@ -133,7 +120,7 @@ function PeriodEditor({
       )}
 
       <div className="flex gap-2 pt-1">
-        <Button className="flex-1" onClick={() => onSave(draft)}>
+        <Button className="flex-1" onClick={() => onSave({ ...draft, science: undefined })}>
           <CheckIcon className="h-4 w-4" /> Save
         </Button>
         <Button variant="ghost" onClick={onCancel}>
@@ -191,15 +178,12 @@ export default function SchedulePage() {
                       {pc.name ? `Period ${n} · ${pc.name}` : `Period ${n}`}
                     </div>
                   )}
-                  {(pc.room || pc.building || pc.teacher || pc.lunch || pc.science) && !pc.free && (
+                  {(pc.room || pc.building || pc.teacher || pc.lunch) && !pc.free && (
                     <div className="truncate text-xs text-[var(--muted)]">
                       {[
                         [pc.building, pc.room].filter(Boolean).join(' '),
                         pc.teacher,
-                        // A legacy science class reads as the first-lunch pick
-                        // it will become the moment the row is opened.
-                        (pc.lunch ?? (pc.science ? 'first' : null)) &&
-                          lunchLabel(pc.lunch ?? 'first'),
+                        pc.lunch && lunchLabel(pc.lunch),
                       ]
                         .filter(Boolean)
                         .join(' · ')}

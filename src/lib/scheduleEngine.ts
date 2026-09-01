@@ -95,8 +95,6 @@ export interface LunchInfo {
   building: string | null;
   /** The resolved lunch track, or null when unknown (no building / no class year). */
   track: LunchTrack | null;
-  /** True when the track came from the student's own override, not the chart. */
-  overridden: boolean;
 }
 
 /** Does this day hand lunch out by grade level rather than by building? */
@@ -130,7 +128,6 @@ export function lunchInfoForDay(
       decidingPeriod: null,
       building: null,
       track: mine?.track ?? null,
-      overridden: false,
     };
   }
   // The lunch split lives on exactly one class block (its first/second copies);
@@ -154,7 +151,7 @@ export function lunchInfoForDay(
     ? null
     : (override ??
       (deciding?.science && !deciding?.free ? 'first' : lunchForBuilding(building)));
-  return { dual, by: 'building', decidingPeriod, building, track, overridden: Boolean(dual && override) };
+  return { dual, by: 'building', decidingPeriod, building, track };
 }
 
 /** A student's lunch track for a day, or null when unknown/single-lunch. */
