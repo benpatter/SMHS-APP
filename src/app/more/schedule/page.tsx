@@ -7,7 +7,7 @@ import { BackLink } from '@/components/BackLink';
 import { Button, Card, Field, LinkButton, Select, TextInput, cx } from '@/components/ui';
 import { PencilIcon, TrashIcon, CheckIcon, ShareIcon } from '@/components/icons';
 import type { LunchTrack, PersonalClass } from '@/lib/types';
-import { BUILDINGS, lunchLabel } from '@/config/buildings';
+import { BUILDINGS, lunchForBuilding, lunchLabel } from '@/config/buildings';
 
 /** The lunch a class eats: derived from the building, or picked by hand. */
 const LUNCH_CHOICES: { value: 'auto' | LunchTrack; label: string }[] = [
@@ -31,6 +31,11 @@ function PeriodEditor({
   onCancel: () => void;
 }) {
   const [draft, setDraft] = useState<PersonalClass>(initial);
+  // Auto follows the building, so name the lunch it lands on rather than making
+  // the student cross-reference the chart to find out. With no building picked
+  // there is nothing to resolve and it stays plain "Auto".
+  const autoTrack = lunchForBuilding(draft.building);
+  const autoLabel = autoTrack ? `Auto: ${lunchLabel(autoTrack)}` : 'Auto';
 
   return (
     <div className="space-y-3 border-t border-[var(--divider)] bg-black/[0.02] px-4 py-4 dark:bg-white/[0.02]">
@@ -95,7 +100,9 @@ function PeriodEditor({
                   }
                   className="h-5 w-5 shrink-0 accent-[var(--royal)]"
                 />
-                <span className="text-sm text-[var(--text)]">{c.label}</span>
+                <span className="text-sm text-[var(--text)]">
+                  {c.value === 'auto' ? autoLabel : c.label}
+                </span>
               </label>
             ))}
           </div>
