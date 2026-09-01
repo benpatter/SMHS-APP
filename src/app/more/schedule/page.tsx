@@ -16,6 +16,15 @@ const LUNCH_CHOICES: { value: 'auto' | LunchTrack; label: string }[] = [
   { value: 'second', label: '2nd Lunch' },
 ];
 
+/**
+ * What "Auto" works out to for a building: "Auto: 1st Lunch". Null when there
+ * is no building to resolve, since then Auto really is just Auto.
+ */
+function autoLunchLabel(building?: string | null): string | null {
+  const track = lunchForBuilding(building);
+  return track ? `Auto: ${lunchLabel(track)}` : null;
+}
+
 function PeriodEditor({
   n,
   initial,
@@ -32,10 +41,8 @@ function PeriodEditor({
 }) {
   const [draft, setDraft] = useState<PersonalClass>(initial);
   // Auto follows the building, so name the lunch it lands on rather than making
-  // the student cross-reference the chart to find out. With no building picked
-  // there is nothing to resolve and it stays plain "Auto".
-  const autoTrack = lunchForBuilding(draft.building);
-  const autoLabel = autoTrack ? `Auto: ${lunchLabel(autoTrack)}` : 'Auto';
+  // the student cross-reference the chart to find out.
+  const autoLabel = autoLunchLabel(draft.building) ?? 'Auto';
 
   return (
     <div className="space-y-3 border-t border-[var(--divider)] bg-black/[0.02] px-4 py-4 dark:bg-white/[0.02]">
@@ -190,7 +197,10 @@ export default function SchedulePage() {
                       {[
                         [pc.building, pc.room].filter(Boolean).join(' '),
                         pc.teacher,
-                        pc.lunch && lunchLabel(pc.lunch),
+                        // The lunch this period eats: the hand-set pick when
+                        // there is one, otherwise whatever the building works
+                        // out to, marked Auto so it is clear nobody chose it.
+                        pc.lunch ? lunchLabel(pc.lunch) : autoLunchLabel(pc.building),
                       ]
                         .filter(Boolean)
                         .join(' · ')}
