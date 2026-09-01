@@ -42,6 +42,7 @@ export interface PersonalClass {
    * of building, so this overrides the building when resolving the lunch track.
    * No longer settable in the editor — the lunch picker's "1st Lunch" says the
    * same thing in one control — but still honored for schedules that carry it.
+   * Saving a period clears it, so the picker and the engine never disagree.
    */
   science?: boolean;
   /**

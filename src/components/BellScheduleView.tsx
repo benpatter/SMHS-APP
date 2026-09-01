@@ -128,12 +128,6 @@ export function BellScheduleView({
                 by class year {isToday ? 'today' : 'that day'}
               </span>
             )}
-            {/* Say when this came from the student's own override rather than
-                the building chart, so a wrong one is traceable to where it was
-                set instead of looking like the app guessing. */}
-            {lunchInfo.overridden && (
-              <span className="text-xs text-[var(--muted)]">set by you</span>
-            )}
           </div>
         ) : (
           // Point at whichever input is actually missing: on a grade-decided day
