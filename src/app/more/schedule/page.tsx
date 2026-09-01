@@ -12,7 +12,7 @@ import { BUILDINGS, lunchForBuilding, lunchLabel } from '@/config/buildings';
 /** The lunch a class eats: derived from the building, or picked by hand. */
 const LUNCH_CHOICES: { value: 'auto' | LunchTrack; label: string }[] = [
   { value: 'auto', label: 'Auto' },
-  { value: 'first', label: '1st Lunch (science class)' },
+  { value: 'first', label: '1st Lunch (or science class)' },
   { value: 'second', label: '2nd Lunch' },
 ];
 
