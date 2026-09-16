@@ -19,6 +19,7 @@ import {
   PhoneIcon,
   ChartIcon,
   ShieldIcon,
+  MailIcon,
 } from '@/components/icons';
 
 /**
@@ -215,6 +216,7 @@ export function ManageSection() {
         <IconTile href="/admin/school/" Icon={SchoolIcon} label="School" sub="Attendance line, Aeries link" />
         <IconTile href="/admin/metrics/" Icon={ChartIcon} label="Metrics" sub="Usage & support tickets" />
         <IconTile href="/admin/access/" Icon={ShieldIcon} label="Admins" sub="Grant admin logins" />
+        <IconTile href="/admin/staff/" Icon={MailIcon} label="Staff" sub="Add or fix staff emails" />
       </div>
     </section>
   );

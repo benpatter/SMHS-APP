@@ -340,7 +340,8 @@ export function PortalGate({
           </Button>
           {member && !member.email && (
             <p className="text-xs text-danger">
-              The directory has no email for {member.name}, so this account can&apos;t sign in.
+              The directory has no email for {member.name}, so this account can&apos;t sign in
+              yet. Ask an app administrator to add one under Administration → Staff.
             </p>
           )}
         </>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { forwardRef } from 'react';
 import type { ComponentProps, MouseEvent, ReactNode } from 'react';
 
 const FIELD_INPUT =
@@ -257,9 +258,14 @@ export function Field({
   );
 }
 
-export function TextInput({ className, ...rest }: ComponentProps<'input'>) {
-  return <input className={cx(FIELD_INPUT, className)} {...rest} />;
-}
+// Forwards the ref so a caller can focus the box (Administration → Staff jumps
+// to the email field when an "Add email" button is tapped).
+export const TextInput = forwardRef<HTMLInputElement, ComponentProps<'input'>>(function TextInput(
+  { className, ...rest },
+  ref,
+) {
+  return <input ref={ref} className={cx(FIELD_INPUT, className)} {...rest} />;
+});
 
 export function TextArea({ className, ...rest }: ComponentProps<'textarea'>) {
   return <textarea className={cx(FIELD_INPUT, 'min-h-[80px] resize-y', className)} {...rest} />;

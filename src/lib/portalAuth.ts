@@ -191,3 +191,71 @@ export function grantAdminAccess(email: string): Promise<{ ok: boolean; error?: 
 export function revokeAdminAccess(email: string): Promise<{ ok: boolean; error?: string }> {
   return postGrantChange('/api/auth/admins/revoke', email);
 }
+
+// ---- Staff accounts by hand ---------------------------------------------------
+// smhs.org publishes no email for some staff, and without one there is no
+// account to sign in with. Admins fill in (or correct) an address from
+// Administration → Staff accounts, or add a person the directory doesn't list.
+// The server merges these rows into /api/staff, so every picker sees them.
+
+export interface StaffOverride {
+  /** The directory display name this row patches, or a new person's name. */
+  name: string;
+  email: string;
+  title: string;
+  departments: string[];
+  /** Email of the admin who last saved the row. */
+  updatedBy: string;
+  /** Unix ms of the last save. */
+  at: number;
+}
+
+/** Every hand-made row, or null when the server is unreachable or refuses. */
+export async function fetchStaffOverrides(): Promise<StaffOverride[] | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/staff/list`, {
+      cache: 'no-store',
+      headers: { Authorization: `Bearer ${getSessionToken() ?? ''}` },
+    });
+    if (!res.ok) return null;
+    const j = await res.json();
+    return Array.isArray(j.overrides) ? j.overrides : null;
+  } catch {
+    return null;
+  }
+}
+
+async function postStaffChange(
+  path: string,
+  payload: unknown,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${getSessionToken() ?? ''}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    const j = await res.json();
+    return j.ok ? { ok: true } : { ok: false, error: j.error || 'The change was not saved' };
+  } catch {
+    return { ok: false, error: 'Could not reach the server. Try again.' };
+  }
+}
+
+/** Add or replace the hand-made row for `name` (POSTs with this device's admin session). */
+export function setStaffOverride(row: {
+  name: string;
+  email: string;
+  title?: string;
+  departments?: string[];
+}): Promise<{ ok: boolean; error?: string }> {
+  return postStaffChange('/api/auth/staff/set', row);
+}
+
+/** Drop the hand-made row for `name`; the directory entry (if any) stands as published. */
+export function removeStaffOverride(name: string): Promise<{ ok: boolean; error?: string }> {
+  return postStaffChange('/api/auth/staff/remove', { name });
+}
