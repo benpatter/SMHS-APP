@@ -1271,30 +1271,182 @@ async function newsPage(page) {
 const STAFF_TTL_MS = 25 * 60 * 60 * 1000; // daily interval refreshes; requests always serve cache
 
 /**
- * Staff whose smhs.org card publishes no email, filled in from what the school
- * told us directly. Without an email there is no account to sign in with, so
- * these people are invisible to every picker in the app no matter what their
- * title says. Keyed by the directory's exact display name; only ever ADDS an
- * address, never replaces a published one.
+ * Staff addresses the school told us directly, keyed by the directory's
+ * display name (case and spacing aside). Without an email there is no account
+ * to sign in with, so a card that publishes none leaves that person invisible
+ * to every picker in the app no matter what their title says; a card that
+ * publishes a WRONG one is worse, sending the setup link somewhere it will
+ * never be read. An address here wins over the published one either way.
+ *
+ * This is the build-time list. Administration → Staff in the app does the
+ * same job at runtime (staff_overrides in auth.db, see applyStaffOverrides),
+ * and a row saved there wins over an entry here.
  */
 // A Map, not an object literal: the key is a name scraped off smhs.org, and a
 // person card reading "__proto__" would resolve to Object.prototype on a plain
 // {} — the same shape as the auth-token bug this codebase already fixed once.
-const DIRECTORY_EMAILS = new Map([
-  // VP of Finance — his title already carries Admin-portal access (see
-  // ADMIN_TITLE_PATTERNS); the missing address was the only thing stopping him.
-  ['Sam Auriemma', 'auriemmas@smhs.org'],
-]);
+const DIRECTORY_EMAILS = new Map(
+  [
+    // VP of Finance — his title already carries Admin-portal access (see
+    // ADMIN_TITLE_PATTERNS); the missing address was the only thing stopping him.
+    ['Sam Auriemma', 'auriemmas@smhs.org'],
+    // Girls Water Polo Head Coach; the card publishes no email.
+    ['Aaron Arias', 'ariasa@smhs.org'],
+    // The card publishes an address that is wrong; this replaces it.
+    ['Ron Blanc', 'blancron1@smhs.org'],
+  ].map(([name, email]) => [name.trim().replace(/\s+/g, ' ').toLowerCase(), email.toLowerCase()]),
+);
 
-/** Fill in the missing addresses on a roster (scraped fresh or read from disk). */
+/** The hand-set address for a directory display name, or undefined. */
+function directoryEmailFor(name) {
+  return DIRECTORY_EMAILS.get(String(name ?? '').trim().replace(/\s+/g, ' ').toLowerCase());
+}
+
+/** Apply the hand-set addresses to a roster (scraped fresh or read from disk). */
 function withDirectoryEmails(dir) {
   if (!dir?.staff) return dir;
   return {
     ...dir,
-    staff: dir.staff.map((s) =>
-      s.email ? s : { ...s, email: (DIRECTORY_EMAILS.get(s.name) ?? '').toLowerCase() },
-    ),
+    staff: dir.staff.map((s) => {
+      const email = directoryEmailFor(s.name);
+      return email && email !== s.email ? { ...s, email } : s;
+    }),
   };
+}
+
+// ---- Staff accounts added or corrected by hand ---------------------------------
+//
+// smhs.org publishes no email for a fair share of the roster (coaches,
+// substitutes, security, aides), and without one there is no account to sign
+// in with: the portal picker shows the name and then refuses it. The
+// DIRECTORY_EMAILS map above covers what the school told us at build time;
+// this covers everything after that, at runtime, with no release: an
+// administrator fills in (or corrects) an address from the app's Staff
+// accounts page, or adds a person the directory doesn't list at all. Rows live
+// in auth.db beside the admin grants and are merged into EVERY read of the
+// roster — the pickers, password setup, admin eligibility and the MCP tool all
+// go through staffRoster() — so the app treats a hand-made row exactly like a
+// published one.
+
+let staffOverridesVersion = 0; // bumped on every write; keys the merge memo
+let mergedRoster = null; // { dir, version, value } — one merge per roster per write
+
+function rowToStaffOverride(r) {
+  let departments = [];
+  try {
+    departments = JSON.parse(r.departments || '[]');
+  } catch {
+    /* an unreadable list is the same as none */
+  }
+  return {
+    name: r.name,
+    email: r.email,
+    title: r.title || '',
+    departments: Array.isArray(departments) ? departments.filter((d) => typeof d === 'string') : [],
+    updatedBy: r.updated_by,
+    at: r.at,
+  };
+}
+
+/** Every hand-made row, oldest first. Throws when auth.db can't open. */
+function listStaffOverrides() {
+  authDb();
+  return authQ.listStaffOverrides.all().map(rowToStaffOverride);
+}
+
+/** How a directory name is matched to a hand-made row: case and spacing aside. */
+const staffNameKey = (name) => String(name ?? '').trim().replace(/\s+/g, ' ').toLowerCase();
+
+/** Sort by last name, ignoring alumni-year suffixes ("Alicia Sayles '00"). */
+const staffLastName = (n) => n.replace(/\s*'\d\d\s*$/, '').split(' ').pop() ?? '';
+function sortStaff(staff) {
+  return [...staff].sort(
+    (a, b) => staffLastName(a.name).localeCompare(staffLastName(b.name)) || a.name.localeCompare(b.name),
+  );
+}
+
+/**
+ * The scraped roster with the hand-made rows merged in. A row whose name is in
+ * the directory patches that person (the email always, the title when given,
+ * departments added to theirs); any other row is a person the directory
+ * doesn't list, appended whole. Memoised per roster object and per write, so
+ * the merge runs once per scrape rather than once per request.
+ */
+function applyStaffOverrides(dir) {
+  if (!dir?.staff) return dir;
+  if (mergedRoster && mergedRoster.dir === dir && mergedRoster.version === staffOverridesVersion) {
+    return mergedRoster.value;
+  }
+  let overrides;
+  try {
+    overrides = listStaffOverrides();
+  } catch (err) {
+    // The roster must keep serving when auth.db is unavailable: better a
+    // picker missing the hand-made rows than no picker at all.
+    console.error('[staff] overrides unavailable:', err.message);
+    return dir;
+  }
+  const version = staffOverridesVersion;
+  const pending = new Map(overrides.map((o) => [staffNameKey(o.name), o]));
+  const staff = dir.staff.map((s) => {
+    const o = pending.get(staffNameKey(s.name));
+    if (!o) return s;
+    pending.delete(staffNameKey(s.name));
+    return {
+      ...s,
+      email: o.email,
+      title: o.title || s.title,
+      departments: [...new Set([...(s.departments ?? []), ...o.departments])],
+      byHand: true,
+    };
+  });
+  for (const o of pending.values()) {
+    // `added`: not on smhs.org at all, as opposed to a directory card patched above.
+    staff.push({
+      name: o.name,
+      title: o.title,
+      email: o.email,
+      departments: o.departments,
+      byHand: true,
+      added: true,
+    });
+  }
+  const value = { ...dir, staff: sortStaff(staff) };
+  mergedRoster = { dir, version, value };
+  return value;
+}
+
+/**
+ * THE roster, as the app should see it: the cached scrape (or the disk copy)
+ * with the hand-made rows applied. Every reader of the directory goes through
+ * here so a person added from the app can sign in the moment the row is saved.
+ */
+async function staffRoster() {
+  return applyStaffOverrides(await cached('staff', scrapeStaffAndSave, STAFF_TTL_MS));
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Validate a Staff accounts write. Returns { error } for the caller to send
+ * as a 400, or the normalised row.
+ */
+function parseStaffOverrideInput(body) {
+  const name = String(body.name ?? '').trim().replace(/\s+/g, ' ');
+  const email = String(body.email ?? '').trim().toLowerCase();
+  const title = String(body.title ?? '').trim().replace(/\s+/g, ' ');
+  const rawDepartments = Array.isArray(body.departments) ? body.departments : [];
+  if (!name || name.length > 120) return { error: 'A name of up to 120 characters is required' };
+  if (!EMAIL_RE.test(email) || email.length > 254) return { error: 'Enter a valid email address' };
+  if (title.length > 200) return { error: 'The title must be 200 characters or fewer' };
+  if (rawDepartments.length > 10) return { error: 'At most 10 departments' };
+  const departments = [];
+  for (const d of rawDepartments) {
+    const clean = String(d ?? '').trim().replace(/\s+/g, ' ');
+    if (!clean || clean.length > 80) return { error: 'Each department must be 1–80 characters' };
+    if (!departments.includes(clean)) departments.push(clean);
+  }
+  return { name, email, title, departments };
 }
 
 /** All fsConstituentItem cards on one directory page → {name,title,email}[]. */
@@ -1310,10 +1462,10 @@ function parseStaffItems(html) {
     const em = b.match(/insertEmail\("[^"]+",\s*"([^"]+)",\s*"([^"]+)"/);
     const scraped = em ? `${[...em[2]].reverse().join('')}@${[...em[1]].reverse().join('')}` : '';
     const clean = decodeEntities(name.replace(/\s+/g, ' '));
-    // Filled in here, not after the merge: the roster keys people by email, so
-    // a person who arrives from one query with an address and from another
-    // without would otherwise split into two entries.
-    const email = scraped || DIRECTORY_EMAILS.get(clean) || '';
+    // Applied here, not after the merge: the roster keys people by email, so
+    // a person who arrives from one query under the published address and
+    // from another under the hand-set one would otherwise split in two.
+    const email = directoryEmailFor(clean) || scraped;
     items.push({
       name: clean,
       title: decodeEntities(title.replace(/\s+/g, ' ')),
@@ -1400,12 +1552,7 @@ async function scrapeStaff() {
     }
   }
 
-  // Sort by last name, ignoring alumni-year suffixes ("Alicia Sayles '00").
-  const lastName = (n) => n.replace(/\s*'\d\d\s*$/, '').split(' ').pop() ?? '';
-  const staff = [...byKey.values()].sort(
-    (a, b) => lastName(a.name).localeCompare(lastName(b.name)) || a.name.localeCompare(b.name),
-  );
-  return { departments: departments.map((d) => d.name), staff };
+  return { departments: departments.map((d) => d.name), staff: sortStaff([...byKey.values()]) };
 }
 
 // ---- Campus life (dining, clubs, campus map, safety) --------------------------
@@ -1820,6 +1967,19 @@ function authDb() {
         granted_by TEXT NOT NULL,
         at         INTEGER NOT NULL
       ) STRICT;
+      -- Staff accounts added or corrected BY HAND from the app's Staff accounts
+      -- page: an email for a directory entry smhs.org publishes none for, a
+      -- corrected one, or a person the directory doesn't list. Keyed by the
+      -- directory's display name (matched case-insensitively at merge time);
+      -- departments is a JSON array. See applyStaffOverrides.
+      CREATE TABLE IF NOT EXISTS staff_overrides (
+        name        TEXT PRIMARY KEY,
+        email       TEXT NOT NULL,
+        title       TEXT NOT NULL DEFAULT '',
+        departments TEXT NOT NULL DEFAULT '[]',
+        updated_by  TEXT NOT NULL,
+        at          INTEGER NOT NULL
+      ) STRICT;
     `);
     // Additive columns on an existing sessions table. SQLite has no
     // ADD COLUMN IF NOT EXISTS, so a re-run throws "duplicate column name" —
@@ -1873,6 +2033,16 @@ function authDb() {
           'ON CONFLICT(email) DO NOTHING',
       ),
       deleteGrant: db.prepare('DELETE FROM admin_grants WHERE email = ?'),
+      listStaffOverrides: db.prepare(
+        'SELECT name, email, title, departments, updated_by, at FROM staff_overrides ORDER BY at',
+      ),
+      upsertStaffOverride: db.prepare(
+        'INSERT INTO staff_overrides (name, email, title, departments, updated_by, at) ' +
+          'VALUES (?, ?, ?, ?, ?, ?) ' +
+          'ON CONFLICT(name) DO UPDATE SET email = excluded.email, title = excluded.title, ' +
+          'departments = excluded.departments, updated_by = excluded.updated_by, at = excluded.at',
+      ),
+      deleteStaffOverride: db.prepare('DELETE FROM staff_overrides WHERE name = ?'),
     };
   } catch (err) {
     // Leave no half-open handle behind: the next call re-runs the whole init.
@@ -2040,7 +2210,7 @@ const TEST_ACCOUNT_EMAILS = new Set(
 /** The scraped roster must contain the email — portals are for real staff only. */
 async function staffEmailExists(email) {
   if (TEST_ACCOUNT_EMAILS.has(email)) return true; // ⚠ TEMPORARY — remove before launch
-  const { staff } = await cached('staff', scrapeStaffAndSave, STAFF_TTL_MS);
+  const { staff } = await staffRoster();
   return staff.some((s) => s.email === email);
 }
 
@@ -2110,7 +2280,7 @@ async function isAdminEmail(email) {
   // grant must keep working even while the directory scrape is down.
   authDb();
   if (authQ.getGrant.get(email)) return true;
-  const { staff } = await cached('staff', scrapeStaffAndSave, STAFF_TTL_MS);
+  const { staff } = await staffRoster();
   const person = staff.find((s) => s.email === email);
   if (!person) return false;
   return Boolean(person.departments?.some((d) => ADMIN_DEPARTMENTS.includes(d))) || hasAdminTitle(person);
@@ -2270,7 +2440,7 @@ function clearedSessionCookie(req) {
 async function resolveIdentity(email) {
   let person = null;
   try {
-    const { staff } = await cached('staff', scrapeStaffAndSave, STAFF_TTL_MS);
+    const { staff } = await staffRoster();
     person = staff.find((s) => s.email === email) || null;
   } catch {
     /* roster unavailable — the email alone still identifies them */
@@ -2532,6 +2702,62 @@ async function handleAuth(pathname, body, req) {
     // sign-in re-resolves to the teacher portal. Same account, same password.
     authQ.deleteSessionsForEmail.run(email);
     auditGrant(granter, 'admin-revoke', email, clientIp(req));
+    return { status: 200, body: { ok: true } };
+  }
+
+  // ---- Staff accounts by hand (the app's Staff accounts page) ---------------
+  // Add an email the directory lacks, correct one, or add a person smhs.org
+  // doesn't list. Admin session required, same bar as minting an admin: a row
+  // here decides which address a directory name signs in with.
+  if (pathname === '/api/auth/staff/set' || pathname === '/api/auth/staff/remove') {
+    const editor = sessionEmail(req);
+    if (!editor) return { status: 401, body: { error: 'staff sign-in required' } };
+    if (!(await isAdminEmail(editor))) {
+      return { status: 403, body: { error: 'admin access required' } };
+    }
+
+    if (pathname === '/api/auth/staff/set') {
+      const parsed = parseStaffOverrideInput(body);
+      if (parsed.error) return { status: 400, body: { error: parsed.error } };
+      // One address, one person. Letting a second name claim an email that
+      // already signs someone in would hand that account's password to a
+      // different directory identity.
+      const { staff } = await staffRoster();
+      const owner = staff.find(
+        (s) => s.email === parsed.email && staffNameKey(s.name) !== staffNameKey(parsed.name),
+      );
+      if (owner) {
+        return { status: 409, body: { error: `That email already belongs to ${owner.name}` } };
+      }
+      // A directory name is stored with the directory's own spelling, so the
+      // row keeps matching however the admin capitalised it.
+      const existing = staff.find((s) => staffNameKey(s.name) === staffNameKey(parsed.name));
+      const name = existing?.name ?? parsed.name;
+      authQ.upsertStaffOverride.run(
+        name,
+        parsed.email,
+        parsed.title,
+        JSON.stringify(parsed.departments),
+        editor,
+        Date.now(),
+      );
+      staffOverridesVersion += 1;
+      auditGrant(editor, 'staff-set', `${name} <${parsed.email}>`, clientIp(req));
+      return { status: 200, body: { ok: true, name, email: parsed.email } };
+    }
+
+    const name = String(body.name ?? '').trim().replace(/\s+/g, ' ');
+    if (!name) return { status: 400, body: { error: 'name required' } };
+    const row = listStaffOverrides().find((o) => staffNameKey(o.name) === staffNameKey(name));
+    if (!row) return { status: 404, body: { error: 'No hand-made entry for that name' } };
+    authQ.deleteStaffOverride.run(row.name);
+    staffOverridesVersion += 1;
+    // Without the row the address may no longer be in the directory at all,
+    // and with it goes anything the account was allowed to do. End its live
+    // sessions so the next sign-in is judged against the directory as it now
+    // stands. The password stays: restoring the row restores the account.
+    authQ.deleteSessionsForEmail.run(row.email);
+    auditGrant(editor, 'staff-remove', `${row.name} <${row.email}>`, clientIp(req));
     return { status: 200, body: { ok: true } };
   }
 
@@ -3693,7 +3919,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (url.pathname === '/api/staff') {
-      const dir = await cached('staff', scrapeStaffAndSave, STAFF_TTL_MS);
+      const dir = await staffRoster();
       return send(res, 200, { source: 'smhs.org', count: dir.staff.length, ...dir });
     }
 
@@ -3790,6 +4016,18 @@ const server = http.createServer(async (req, res) => {
       }
       const { status, body } = listSupportTickets();
       return send(res, status, body, { fresh: true });
+    }
+
+    if (url.pathname === '/api/auth/staff/list' && req.method === 'GET') {
+      // The hand-made staff rows, with who made each. Admins only: unlike the
+      // grant list, nothing pre-auth needs it (the merged roster is what
+      // /api/staff already serves), and it names the editors.
+      const email = sessionEmail(req);
+      if (!email) return send(res, 401, { error: 'staff sign-in required' }, { fresh: true });
+      if (!(await isAdminEmail(email))) {
+        return send(res, 403, { error: 'admin access required' }, { fresh: true });
+      }
+      return send(res, 200, { overrides: listStaffOverrides() }, { fresh: true });
     }
 
     if (url.pathname === '/api/auth/admins' && req.method === 'GET') {

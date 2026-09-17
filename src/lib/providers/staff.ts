@@ -14,6 +14,13 @@ export interface StaffMember {
   email: string;
   /** Directory department names this person belongs to (can be several). */
   departments: string[];
+  /**
+   * Set by the server when an admin added or corrected this entry from
+   * Administration → Staff accounts (see server/index.mjs applyStaffOverrides).
+   */
+  byHand?: boolean;
+  /** With byHand: a person the directory doesn't list at all, not a patched card. */
+  added?: boolean;
 }
 
 export interface StaffDirectory {
@@ -22,8 +29,11 @@ export interface StaffDirectory {
 }
 
 // Module-level cache: the roster changes rarely; one fetch per app session.
+// An admin editing Staff accounts calls invalidateStaffDirectory() so every
+// mounted useStaffDirectory() picks the change up without a reload.
 let cachedDir: StaffDirectory | null = null;
 let inflight: Promise<StaffDirectory | null> | null = null;
+const listeners = new Set<(dir: StaffDirectory) => void>();
 
 export async function fetchStaffDirectory(): Promise<StaffDirectory | null> {
   if (cachedDir) return cachedDir;
@@ -45,6 +55,13 @@ export async function fetchStaffDirectory(): Promise<StaffDirectory | null> {
   return inflight;
 }
 
+/** Drop the cached roster and re-fetch; every mounted useStaffDirectory() updates. */
+export async function invalidateStaffDirectory(): Promise<void> {
+  cachedDir = null;
+  const next = await fetchStaffDirectory();
+  if (next) for (const l of listeners) l(next);
+}
+
 /** The directory, or null while loading / when the proxy is unreachable. */
 export function useStaffDirectory(): { directory: StaffDirectory | null; loading: boolean } {
   const [directory, setDirectory] = useState<StaffDirectory | null>(cachedDir);
@@ -58,8 +75,11 @@ export function useStaffDirectory(): { directory: StaffDirectory | null; loading
         setLoading(false);
       });
     }
+    const listener = (dir: StaffDirectory) => setDirectory(dir);
+    listeners.add(listener);
     return () => {
       alive = false;
+      listeners.delete(listener);
     };
   }, []);
   return { directory, loading };

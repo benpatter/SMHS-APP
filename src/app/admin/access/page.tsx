@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { AdminGate } from '@/components/AdminGate';
 import { StaffPicker } from '@/components/StaffPicker';
 import { isAdminEligible } from '@/components/PortalGate';
@@ -79,7 +80,12 @@ function GrantEditor() {
           <p className="text-sm text-[var(--muted)]">
             Pick someone from the staff directory to let them sign in to the Admin portal. Their
             account stays the same — same email, same password — they just gain admin access. People
-            who already have it aren&apos;t listed.
+            who already have it aren&apos;t listed, and neither is anyone the directory has no email
+            for: add theirs under{' '}
+            <Link href="/admin/staff/" className="font-semibold text-royal underline dark:text-gold">
+              Staff
+            </Link>{' '}
+            first.
           </p>
           {loading ? (
             <Spinner label="Loading the staff directory…" />

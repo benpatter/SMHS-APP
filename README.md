@@ -47,6 +47,8 @@ The server pulls the staff directory, clubs, athletics, and news from smhs.org, 
 
 Admins edit announcements, notices, schedule changes, dining, contacts, prayers, and campus map pins inside the app. Those writes land in `server/.data/data.json`, and devices pick them up from `/api/data` on an ETag-cached poll.
 
+Staff sign in as the person on their smhs.org directory card, and the account is keyed by the email on that card. Some cards publish no email (coaches, substitutes, security), so under **Administration → Staff** an admin can add or correct an address, or add someone the directory doesn't list. Those rows live in `server/.data/auth.db` and are merged into `/api/staff`, so the pickers, password setup, and admin eligibility all see them at once. **Administration → Admins** grants Admin-portal access on top of the department and title rules.
+
 When a source is unreachable the app prints "Schedule unavailable" or "Hours unavailable" and leaves it there. Guessing a bell time or a front-office number would be worse than showing nothing.
 
 ## Privacy
