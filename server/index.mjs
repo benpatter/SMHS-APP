@@ -1271,29 +1271,46 @@ async function newsPage(page) {
 const STAFF_TTL_MS = 25 * 60 * 60 * 1000; // daily interval refreshes; requests always serve cache
 
 /**
- * Staff whose smhs.org card publishes no email, filled in from what the school
- * told us directly. Without an email there is no account to sign in with, so
- * these people are invisible to every picker in the app no matter what their
- * title says. Keyed by the directory's exact display name; only ever ADDS an
- * address, never replaces a published one.
+ * Staff addresses the school told us directly, keyed by the directory's
+ * display name (case and spacing aside). Without an email there is no account
+ * to sign in with, so a card that publishes none leaves that person invisible
+ * to every picker in the app no matter what their title says; a card that
+ * publishes a WRONG one is worse, sending the setup link somewhere it will
+ * never be read. An address here wins over the published one either way.
+ *
+ * This is the build-time list. Administration → Staff in the app does the
+ * same job at runtime (staff_overrides in auth.db, see applyStaffOverrides),
+ * and a row saved there wins over an entry here.
  */
 // A Map, not an object literal: the key is a name scraped off smhs.org, and a
 // person card reading "__proto__" would resolve to Object.prototype on a plain
 // {} — the same shape as the auth-token bug this codebase already fixed once.
-const DIRECTORY_EMAILS = new Map([
-  // VP of Finance — his title already carries Admin-portal access (see
-  // ADMIN_TITLE_PATTERNS); the missing address was the only thing stopping him.
-  ['Sam Auriemma', 'auriemmas@smhs.org'],
-]);
+const DIRECTORY_EMAILS = new Map(
+  [
+    // VP of Finance — his title already carries Admin-portal access (see
+    // ADMIN_TITLE_PATTERNS); the missing address was the only thing stopping him.
+    ['Sam Auriemma', 'auriemmas@smhs.org'],
+    // Girls Water Polo Head Coach; the card publishes no email.
+    ['Aaron Arias', 'ariasa@smhs.org'],
+    // The card publishes an address that is wrong; this replaces it.
+    ['Ron Blanc', 'blancron1@smhs.org'],
+  ].map(([name, email]) => [name.trim().replace(/\s+/g, ' ').toLowerCase(), email.toLowerCase()]),
+);
 
-/** Fill in the missing addresses on a roster (scraped fresh or read from disk). */
+/** The hand-set address for a directory display name, or undefined. */
+function directoryEmailFor(name) {
+  return DIRECTORY_EMAILS.get(String(name ?? '').trim().replace(/\s+/g, ' ').toLowerCase());
+}
+
+/** Apply the hand-set addresses to a roster (scraped fresh or read from disk). */
 function withDirectoryEmails(dir) {
   if (!dir?.staff) return dir;
   return {
     ...dir,
-    staff: dir.staff.map((s) =>
-      s.email ? s : { ...s, email: (DIRECTORY_EMAILS.get(s.name) ?? '').toLowerCase() },
-    ),
+    staff: dir.staff.map((s) => {
+      const email = directoryEmailFor(s.name);
+      return email && email !== s.email ? { ...s, email } : s;
+    }),
   };
 }
 
@@ -1445,10 +1462,10 @@ function parseStaffItems(html) {
     const em = b.match(/insertEmail\("[^"]+",\s*"([^"]+)",\s*"([^"]+)"/);
     const scraped = em ? `${[...em[2]].reverse().join('')}@${[...em[1]].reverse().join('')}` : '';
     const clean = decodeEntities(name.replace(/\s+/g, ' '));
-    // Filled in here, not after the merge: the roster keys people by email, so
-    // a person who arrives from one query with an address and from another
-    // without would otherwise split into two entries.
-    const email = scraped || DIRECTORY_EMAILS.get(clean) || '';
+    // Applied here, not after the merge: the roster keys people by email, so
+    // a person who arrives from one query under the published address and
+    // from another under the hand-set one would otherwise split in two.
+    const email = directoryEmailFor(clean) || scraped;
     items.push({
       name: clean,
       title: decodeEntities(title.replace(/\s+/g, ' ')),
