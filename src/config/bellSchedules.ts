@@ -205,7 +205,7 @@ export const BELL_SCHEDULES: Record<DayTypeId, BellSchedule> = {
     short: 'Rally',
     description: 'All-school rally before a single lunch.',
     periods: [
-      special('meeting', 'Staff Meeting', '08:00', '08:55'),
+      special('meeting', 'Meeting', '08:00', '08:55'),
       blk(1, '09:00', '10:20'),
       special('rally', 'Rally / Assembly', '10:25', '11:15'),
       lunch('11:15', '11:55'),
