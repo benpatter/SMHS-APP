@@ -314,7 +314,7 @@ function classifyPeriod(label, start, end, track) {
   if (/lunch/i.test(l))
     return { id: `lunch${track ? '-' + track : ''}`, label: track === 'first' ? 'First Lunch' : track === 'second' ? 'Second Lunch' : 'Lunch', kind: 'lunch', ...base };
   if (/mass/i.test(l)) return { id: 'mass', label: 'Mass', kind: 'special', ...base };
-  if (/mtg|plc|meeting/i.test(l)) return { id: 'meeting', label: 'Staff Meeting', kind: 'special', ...base };
+  if (/mtg|plc|meeting/i.test(l)) return { id: 'meeting', label: 'Meeting', kind: 'special', ...base };
   if (/rally|assembly/i.test(l)) return { id: 'rally', label: 'Rally / Assembly', kind: 'special', ...base };
   if (/break/i.test(l)) return { id: 'break', label: 'Break', kind: 'break', ...base };
   return { id: l.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 16) || 'event', label: l, kind: 'special', ...base };
