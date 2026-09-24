@@ -157,7 +157,7 @@ export const BELL_SCHEDULES: Record<DayTypeId, BellSchedule> = {
     short: 'Meeting',
     description: 'Faculty meeting first; classes begin at Period 1 (9:00 AM).',
     periods: [
-      special('meeting', 'Staff Meeting', '08:00', '08:55'),
+      special('meeting', 'Meeting', '08:00', '08:55'),
       blk(1, '09:00', '10:20'),
       // First-lunch track
       lunch('10:20', '10:55', 'first'),
